@@ -1,0 +1,32 @@
+# Copyright 2018 the LinuxBoot Authors. All rights reserved
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
+#!/bin/bash
+
+set -e
+
+echo "Running Pre-Commit"
+
+FILES=`git diff --diff-filter=AM --staged --name-only | grep '.*\.go' | cat`
+
+if [ -z "$FILES" ];
+then
+	echo "No go files to check. Skipping."
+	exit 0
+fi
+
+gofmt -w -s $FILES
+echo $FILES | xargs -n 1 golint -set_exit_status
+go tool vet pkg/* cmds/*
+
+# Check it builds
+
+for x in $(ls cmds); do
+    (cd cmds/$x && go build .)
+done
+
+# Check tests
+
+go test ./...
+echo "Pre-Commit Passed"
