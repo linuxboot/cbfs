@@ -87,11 +87,11 @@ type Tag uint32
 
 const (
 	Unused     Tag = 0
-	Unused2             = 0xffffffff
-	Compressed          = 0x42435a4c
-	Hash                = 0x68736148
-	PSCB                = 0x42435350
-	ALCB                = 0x42434c41
+	Unused2        = 0xffffffff
+	Compressed     = 0x42435a4c
+	Hash           = 0x68736148
+	PSCB           = 0x42435350
+	ALCB           = 0x42434c41
 )
 
 type FileAttrCompression struct {
@@ -138,6 +138,11 @@ type CBFSHeader struct {
 	Offset        uint32
 	Architecture  CBFSArchitecture // integer, not name -- FOV
 	_             uint32
+}
+
+type CBFSFile struct {
+	File
+	CBFSHeader
 }
 
 type CBFSArchitecture uint32
@@ -187,4 +192,11 @@ type OptionRom struct {
 	File
 	Compression uint32
 	Size        uint32
+}
+
+// Each CBFS file type must implement at least this interface.
+type CBFSReadWriter interface {
+	String() string
+	Read([]byte) (int, error)
+	Write([]byte) (int, error)
 }
