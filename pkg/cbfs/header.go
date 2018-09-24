@@ -1,9 +1,21 @@
 package cbfs
 
-import "io"
+import (
+	"io"
+	"log"
+)
 
-func NewHeader(r io.Reader, f File) (CBFSReadWriter, error) {
-	h := &CBFSFile{File: f}
+func init() {
+	if err := RegisterFileReader(&SegReader{T: 2, N: "CBFSHeader", F: NewHeader}); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func NewHeader(r io.Reader) (CBFSReadWriter, error) {
+	h := &CBFSHeader{}
+	if err := CBFSRead(r, h); err != nil {
+		return nil, err
+	}
 	return h, nil
 }
 

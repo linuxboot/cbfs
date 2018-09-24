@@ -1,5 +1,7 @@
 package cbfs
 
+import "encoding/binary"
+
 type Props struct {
 	Offset uint32
 	Size   uint32
@@ -10,6 +12,8 @@ const (
 	LZMA
 	LZ4
 )
+
+var CBFSEndian = binary.BigEndian
 
 // These are standard component types for well known
 //   components (i.e - those that coreboot needs to consume.
@@ -66,10 +70,22 @@ const (
 
 const FileMagic = "LARCHIVE"
 
-type File struct {
+// This is kind of a mess. The file is aligned on 16 bytes. The size is 16 + Size. Why?
+// Because in the beginning, IIRC, the AttrOffset and Offset weren't in there. Also the
+// master record seems to be Type 2 but that's not documented.
+// So we make a Tag, which is the thing we search on, and when we match, we read in the File,
+// and, when we know what type it is, we pull that in. It's repeated work but it keeps it a
+// bit simpler.
+const TagSize = 16
+type LarchiveTag struct {
 	Magic      [8]byte
 	Size       uint32
 	Type       CBFSFileType
+}
+
+const FileSize = 24
+type File struct {
+	LarchiveTag
 	AttrOffset uint32
 	Offset     uint32
 }
