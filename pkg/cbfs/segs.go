@@ -28,7 +28,14 @@ func NewSegs(in io.Reader) ([]ReadWriter, error) {
 	for {
 		var f File
 		var m Magic
-		err := Read(r, m[:])
+		err := Align(r)
+		if err == io.EOF {
+			return segs, nil
+		}
+		if err != nil {
+			return nil, err
+		}
+		err = Read(r, m[:])
 		if err == io.EOF {
 			return segs, nil
 		}
@@ -36,13 +43,6 @@ func NewSegs(in io.Reader) ([]ReadWriter, error) {
 			return nil, err
 		}
 		if string(m[:]) != FileMagic {
-			err := Align(r)
-			if err == io.EOF {
-				return segs, nil
-			}
-			if err != nil {
-				return nil, err
-			}
 			continue
 		}
 		Debug("It is an LARCHIVE at %#x", int(r.Count()) - len(FileMagic))
@@ -69,10 +69,6 @@ func NewSegs(in io.Reader) ([]ReadWriter, error) {
 		Debug("Segment was readable")
 		segs = append(segs, s)
 		Debug("r.Count is now %#x", r.Count())
-		if err := Align(r); err != nil {
-			return segs, err
-		}
-			
 	}
 	return segs, nil
 }
