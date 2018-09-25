@@ -1,7 +1,6 @@
 package cbfs
 
 import (
-	"io"
 	"log"
 )
 
@@ -11,9 +10,10 @@ func init() {
 	}
 }
 
-func NewHeader(r io.Reader, f *File) (CBFSReadWriter, error) {
-	h := &CBFSMasterRecord{File: *f}
-	if err := CBFSRead(r, &h.CBFSHeader); err != nil {
+func NewHeader(r CountingReader, f *File) (ReadWriter, error) {
+	h := &MasterRecord{File: *f}
+	Debug("Before Header: total bytes read: %d", r.Count())
+	if err := Read(r, &h.Header); err != nil {
 		Debug("Header read: %v", err)
 		return nil, err
 	}
@@ -21,14 +21,14 @@ func NewHeader(r io.Reader, f *File) (CBFSReadWriter, error) {
 	return h, nil
 }
 
-func (h *CBFSMasterRecord) Read([]byte) (int, error) {
+func (h *MasterRecord) Read([]byte) (int, error) {
 	return -1, nil
 }
 
-func (h *CBFSMasterRecord) Write([]byte) (int, error) {
+func (h *MasterRecord) Write([]byte) (int, error) {
 	return -1, nil
 }
 
-func (H *CBFSMasterRecord) String() string {
+func (H *MasterRecord) String() string {
 	return ""
 }

@@ -1,6 +1,10 @@
 package cbfs
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"io"
+	"sync/atomic"
+)
 
 type Props struct {
 	Offset uint32
@@ -13,17 +17,17 @@ const (
 	LZ4
 )
 
-var CBFSEndian = binary.BigEndian
+var Endian = binary.BigEndian
 
 // These are standard component types for well known
 //   components (i.e - those that coreboot needs to consume.
 //   Users are welcome to use any other value for their
 //   components.
-type CBFSFileType uint32
+type FileType uint32
 
 const (
 	// FOV
-	TypeDeleted2   CBFSFileType = 0xffffffff
+	TypeDeleted2   FileType = 0xffffffff
 	TypeDeleted                 = 0
 	TypeStage                   = 0x10
 	TypeSelf                    = 0x20
@@ -74,11 +78,16 @@ type Magic [8]byte
 
 const FileSize = 16
 
-type File struct {
+type FileHeader struct {
 	Size       uint32
-	Type       CBFSFileType
+	Type       FileType
 	AttrOffset uint32
 	Offset     uint32
+}
+
+type File struct {
+	FileHeader
+	Name string
 }
 
 // The common fields of extended cbfs file attributes.
@@ -135,27 +144,27 @@ type FileAttrAlign struct {
 // this is the master cbfs header - it must be located somewhere available
 // to bootblock (to load romstage). The last 4 bytes in the image contain its
 // relative offset from the end of the image (as a 32-bit signed integer).
-type CBFSHeader struct {
+const HeaderLen = 32
+type Header struct {
 	Magic         uint32
 	Version       uint32
 	RomSize       uint32
 	BootBlockSize uint32
 	Align         uint32 // always 64 bytes -- FOV
 	Offset        uint32
-	Architecture  CBFSArchitecture // integer, not name -- FOV
+	Architecture  Architecture // integer, not name -- FOV
 	_             uint32
 }
 
-type CBFSMasterRecord struct {
+type MasterRecord struct {
 	File
-	CBFSHeader
-	Name string
+	Header
 }
 
-type CBFSArchitecture uint32
+type Architecture uint32
 
 const (
-	X86 CBFSArchitecture = 1
+	X86 Architecture = 1
 	ARM                  = 0x10
 )
 
@@ -202,8 +211,35 @@ type OptionRom struct {
 }
 
 // Each CBFS file type must implement at least this interface.
-type CBFSReadWriter interface {
+type ReadWriter interface {
 	String() string
 	Read([]byte) (int, error)
 	Write([]byte) (int, error)
+}
+
+type CountingReader interface {
+	Read([]byte) (int, error)
+	Count() uint32
+}
+
+type Reader struct {
+	io.Reader
+	c uint64
+}
+
+func NewCountingReader(r io.Reader) CountingReader {
+	return &Reader{Reader: r}
+}
+
+func (r *Reader) Read(b []byte) (int, error) {
+	n, err := r.Reader.Read(b)
+	if n > 0 {
+		atomic.AddUint64(&r.c, uint64(n))
+	}
+	return n, err
+}
+
+// Count function return counted bytes
+func (r *Reader) Count() uint32 {
+	return uint32(atomic.LoadUint64(&r.c))
 }

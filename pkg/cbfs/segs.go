@@ -6,12 +6,12 @@ import (
 )
 
 type SegReader struct {
-	T CBFSFileType
-	F func(r io.Reader, f *File) (CBFSReadWriter, error)
+	T FileType
+	F func(r CountingReader, f *File) (ReadWriter, error)
 	N string
 }
 
-var SegReaders = make(map[CBFSFileType]*SegReader)
+var SegReaders = make(map[FileType]*SegReader)
 
 func RegisterFileReader(f *SegReader) error {
 	if r, ok := SegReaders[f.T]; ok {
@@ -22,12 +22,13 @@ func RegisterFileReader(f *SegReader) error {
 	return nil
 }
 
-func NewSegs(r io.Reader) ([]CBFSReadWriter, error) {
-	var segs []CBFSReadWriter
+func NewSegs(in io.Reader) ([]ReadWriter, error) {
+	r := NewCountingReader(in)
+	var segs []ReadWriter
 	for {
 		var f File
 		var m Magic
-		err := CBFSRead(r, m[:])
+		err := Read(r, m[:])
 		if err == io.EOF {
 			return segs, nil
 		}
@@ -36,7 +37,7 @@ func NewSegs(r io.Reader) ([]CBFSReadWriter, error) {
 		}
 		if string(m[:]) != FileMagic {
 			// Do a fake read and throw away the results.
-			err := CBFSRead(r, m[:])
+			err := Read(r, m[:])
 			if err == io.EOF {
 				return segs, nil
 			}
@@ -47,18 +48,24 @@ func NewSegs(r io.Reader) ([]CBFSReadWriter, error) {
 			continue
 		}
 		Debug("It is an LARCHIVE")
-		if err := CBFSRead(r, &f); err != nil {
+		if err := Read(r, &f.FileHeader); err != nil {
+			Debug("Reading the File failed: %v", err)
 			return nil, err
 		}
 		Debug("It is %v type %v", f, f.Type)
-		// If we match something, cons up a SectionReader for it and let the appropriate
-		// type read it in.
-		n, ok := SegReaders[f.Type]
+		Debug("%d %d ", f.Offset, f.Offset - 24)
+		n, err := ReadName(r, &f)
+		if err != nil {
+			return nil, err
+		}
+		f.Name = n
+
+		sr, ok := SegReaders[f.Type]
 		if !ok {
 			return nil, fmt.Errorf("%v: unknown type %v", f, f.Type)
 		}
 		Debug("Found a SegReader for this %d size section: %v", f.Size, n)
-		s, err := n.F(r, &f)
+		s, err := sr.F(r, &f)
 		if err != nil {
 			return nil, err
 		}
