@@ -70,22 +70,13 @@ const (
 
 const FileMagic = "LARCHIVE"
 
-// This is kind of a mess. The file is aligned on 16 bytes. The size is 16 + Size. Why?
-// Because in the beginning, IIRC, the AttrOffset and Offset weren't in there. Also the
-// master record seems to be Type 2 but that's not documented.
-// So we make a Tag, which is the thing we search on, and when we match, we read in the File,
-// and, when we know what type it is, we pull that in. It's repeated work but it keeps it a
-// bit simpler.
-const TagSize = 16
-type LarchiveTag struct {
-	Magic      [8]byte
+type Magic [8]byte
+
+const FileSize = 16
+
+type File struct {
 	Size       uint32
 	Type       CBFSFileType
-}
-
-const FileSize = 24
-type File struct {
-	LarchiveTag
 	AttrOffset uint32
 	Offset     uint32
 }
@@ -145,7 +136,6 @@ type FileAttrAlign struct {
 // to bootblock (to load romstage). The last 4 bytes in the image contain its
 // relative offset from the end of the image (as a 32-bit signed integer).
 type CBFSHeader struct {
-	File
 	Magic         uint32
 	Version       uint32
 	RomSize       uint32
@@ -156,7 +146,7 @@ type CBFSHeader struct {
 	_             uint32
 }
 
-type CBFSFile struct {
+type CBFSMasterRecord struct {
 	File
 	CBFSHeader
 }

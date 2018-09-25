@@ -11,22 +11,23 @@ func init() {
 	}
 }
 
-func NewHeader(r io.Reader) (CBFSReadWriter, error) {
-	h := &CBFSHeader{}
-	if err := CBFSRead(r, h); err != nil {
+func NewHeader(r io.Reader, f *File) (CBFSReadWriter, error) {
+	h := &CBFSMasterRecord{File: *f}
+	if err := CBFSRead(r, &h.CBFSHeader); err != nil {
 		return nil, err
 	}
+	Debug("Got header %v", *h)
 	return h, nil
 }
 
-func (h *CBFSHeader) Read([]byte) (int, error) {
+func (h *CBFSMasterRecord) Read([]byte) (int, error) {
 	return -1, nil
 }
 
-func (h *CBFSHeader) Write([]byte) (int, error) {
+func (h *CBFSMasterRecord) Write([]byte) (int, error) {
 	return -1, nil
 }
 
-func (H *CBFSHeader) String() string {
+func (H *CBFSMasterRecord) String() string {
 	return ""
 }
