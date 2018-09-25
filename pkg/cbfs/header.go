@@ -13,7 +13,7 @@ func init() {
 func NewHeader(r CountingReader, f *File) (ReadWriter, error) {
 	h := &MasterRecord{File: *f}
 	Debug("Before Header: total bytes read: %d", r.Count())
-	if err := Read(r, &h.Header); err != nil {
+	if err := Read(r, &h.MasterHeader); err != nil {
 		Debug("Header read: %v", err)
 		return nil, err
 	}

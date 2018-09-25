@@ -144,8 +144,8 @@ type FileAttrAlign struct {
 // this is the master cbfs header - it must be located somewhere available
 // to bootblock (to load romstage). The last 4 bytes in the image contain its
 // relative offset from the end of the image (as a 32-bit signed integer).
-const HeaderLen = 32
-type Header struct {
+const MasterHeaderLen = 32
+type MasterHeader struct {
 	Magic         uint32
 	Version       uint32
 	RomSize       uint32
@@ -158,7 +158,7 @@ type Header struct {
 
 type MasterRecord struct {
 	File
-	Header
+	MasterHeader
 }
 
 type Architecture uint32
