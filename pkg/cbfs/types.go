@@ -149,6 +149,7 @@ type CBFSHeader struct {
 type CBFSMasterRecord struct {
 	File
 	CBFSHeader
+	Name string
 }
 
 type CBFSArchitecture uint32

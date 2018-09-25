@@ -27,7 +27,11 @@ func NewSegs(r io.Reader) ([]CBFSReadWriter, error) {
 	for {
 		var f File
 		var m Magic
-		if err := CBFSRead(r, m[:]); err != nil {
+		err := CBFSRead(r, m[:])
+		if err == io.EOF {
+			return segs, nil
+		}
+		if err != nil {
 			return nil, err
 		}
 		if string(m[:]) != FileMagic {

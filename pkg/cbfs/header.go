@@ -14,6 +14,7 @@ func init() {
 func NewHeader(r io.Reader, f *File) (CBFSReadWriter, error) {
 	h := &CBFSMasterRecord{File: *f}
 	if err := CBFSRead(r, &h.CBFSHeader); err != nil {
+		Debug("Header read: %v", err)
 		return nil, err
 	}
 	Debug("Got header %v", *h)
