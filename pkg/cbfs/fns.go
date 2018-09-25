@@ -36,6 +36,10 @@ func ReadName(r CountingReader, f *File) (string, error) {
 	return string(z[0]), nil
 }
 
-//func (f*File) Name() string {
-//	return f.name
-//}
+func Align(r CountingReader) error {
+	var junk [16]byte
+	align := (int(r.Count()) + 15) & ^0xf
+	amt := align - int(r.Count())
+	return Read(r, junk[:amt])
+}
+

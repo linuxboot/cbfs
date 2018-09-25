@@ -36,18 +36,16 @@ func NewSegs(in io.Reader) ([]ReadWriter, error) {
 			return nil, err
 		}
 		if string(m[:]) != FileMagic {
-			// Do a fake read and throw away the results.
-			err := Read(r, m[:])
+			err := Align(r)
 			if err == io.EOF {
 				return segs, nil
 			}
 			if err != nil {
 				return nil, err
 			}
-
 			continue
 		}
-		Debug("It is an LARCHIVE at %#x", r.Count())
+		Debug("It is an LARCHIVE at %#x", int(r.Count()) - len(FileMagic))
 		if err := Read(r, &f.FileHeader); err != nil {
 			Debug("Reading the File failed: %v", err)
 			return nil, err
@@ -71,17 +69,9 @@ func NewSegs(in io.Reader) ([]ReadWriter, error) {
 		Debug("Segment was readable")
 		segs = append(segs, s)
 		Debug("r.Count is now %#x", r.Count())
-		// The next read must be 16 byte aligned.
-		// Otherwise a spurious LARCHIVE in the wrong place can throw us
-		// off.
-		align := (int(r.Count()) + 15) & ^0xf
-		amt := align - int(r.Count())
-		Debug("Toss away %d bytes", amt)
-		// We ignore the error as 
-		if err := Read(r, m[:amt]); err == io.EOF {
-			return segs, nil
+		if err := Align(r); err != nil {
+			return segs, err
 		}
-		Debug("r.Count is %#x", r.Count())
 			
 	}
 	return segs, nil
