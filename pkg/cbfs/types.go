@@ -168,13 +168,18 @@ const (
 	ARM                  = 0x10
 )
 
-type Stage struct {
-	File
+type StageHeader struct {
 	Compression uint32
 	Entry       uint64
 	LoadAddress uint64
 	Size        uint32
 	MemSize     uint32
+}
+
+type StageRecord struct {
+	File
+	StageHeader
+	Data[]byte
 }
 
 type PayloadSegment struct {

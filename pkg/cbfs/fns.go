@@ -10,6 +10,7 @@ import (
 
 var Debug = log.Printf
 
+// Read reads things in in BE format, which they are supposed to be in.
 func Read(r io.Reader, f interface{}) error {
 	if err := binary.Read(r, Endian, f); err != nil {
 		return err
@@ -17,9 +18,16 @@ func Read(r io.Reader, f interface{}) error {
 	return nil
 }
 
-func ReadName(r CountingReader, f *File) (string, error) {
-	Debug("Readname: f.Offset %d, count %d", f.Offset, f.Offset - 24)
-	b := make([]byte, f.Offset - 24)
+// Read LE reads things in LE format, which the spec says it is not in.
+func ReadLE(r io.Reader, f interface{}) error {
+	if err := binary.Read(r, binary.LittleEndian, f); err != nil {
+		return err
+	}
+	return nil
+}
+
+func ReadName(r CountingReader, f *File, size uint32) (string, error) {
+	b := make([]byte, size)
 	n, err := r.Read(b)
 	if err != nil {
 		Debug("ReadName failed:%v", err)

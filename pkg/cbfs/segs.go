@@ -35,6 +35,7 @@ func NewSegs(in io.Reader) ([]ReadWriter, error) {
 		if err != nil {
 			return nil, err
 		}
+		recStart := r.Count()
 		err = Read(r, m[:])
 		if err == io.EOF {
 			return segs, nil
@@ -55,12 +56,14 @@ func NewSegs(in io.Reader) ([]ReadWriter, error) {
 		if !ok {
 			return nil, fmt.Errorf("%v: unknown type %v", f, f.Type)
 		}
-		Debug("%d %d ", f.Offset, f.Offset - 24)
-		n, err := ReadName(r, &f)
+		headSize := r.Count() - recStart
+		Debug("Namelen %d %d ", f.Offset, f.Offset - headSize)
+		n, err := ReadName(r, &f, f.Offset - headSize)
 		if err != nil {
 			return nil, err
 		}
 		f.Name = n
+		Debug("Counbt after name is %#x", r.Count())
 		Debug("Found a SegReader for this %d size section: %v", f.Size, n)
 		s, err := sr.F(r, &f)
 		if err != nil {
