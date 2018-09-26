@@ -50,4 +50,3 @@ func Align(r CountingReader) error {
 	amt := align - int(r.Count())
 	return Read(r, junk[:amt])
 }
-

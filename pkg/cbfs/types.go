@@ -28,25 +28,25 @@ type FileType uint32
 const (
 	// FOV
 	TypeDeleted2   FileType = 0xffffffff
-	TypeDeleted                 = 0
-	TypeStage                   = 0x10
-	TypeSelf                    = 0x20
-	TypeFIT                     = 0x21
-	TypeOptionRom               = 0x30
-	TypeBootSplash              = 0x40
-	TypeRaw                     = 0x50
-	TypeVSA                     = 0x51 // very, very obsolete Geode thing
-	TypeMBI                     = 0x52
-	TypeMicroCode               = 0x53
-	TypeFSP                     = 0x60
-	TypeMRC                     = 0x61
-	TypeMMA                     = 0x62
-	TypeEFI                     = 0x63
-	TypeStruct                  = 0x70
-	TypeCMOS                    = 0xaa
-	TypeSPD                     = 0xab
-	TypeMRCCache                = 0xac
-	TypeCMOSLayout              = 0x1aa
+	TypeDeleted             = 0
+	TypeStage               = 0x10
+	TypeSelf                = 0x20
+	TypeFIT                 = 0x21
+	TypeOptionRom           = 0x30
+	TypeBootSplash          = 0x40
+	TypeRaw                 = 0x50
+	TypeVSA                 = 0x51 // very, very obsolete Geode thing
+	TypeMBI                 = 0x52
+	TypeMicroCode           = 0x53
+	TypeFSP                 = 0x60
+	TypeMRC                 = 0x61
+	TypeMMA                 = 0x62
+	TypeEFI                 = 0x63
+	TypeStruct              = 0x70
+	TypeCMOS                = 0xaa
+	TypeSPD                 = 0xab
+	TypeMRCCache            = 0xac
+	TypeCMOSLayout          = 0x1aa
 )
 
 const (
@@ -145,6 +145,7 @@ type FileAttrAlign struct {
 // to bootblock (to load romstage). The last 4 bytes in the image contain its
 // relative offset from the end of the image (as a 32-bit signed integer).
 const MasterHeaderLen = 32
+
 type MasterHeader struct {
 	Magic         uint32
 	Version       uint32
@@ -165,7 +166,7 @@ type Architecture uint32
 
 const (
 	X86 Architecture = 1
-	ARM                  = 0x10
+	ARM              = 0x10
 )
 
 type StageHeader struct {
@@ -179,7 +180,12 @@ type StageHeader struct {
 type StageRecord struct {
 	File
 	StageHeader
-	Data[]byte
+	Data []byte
+}
+
+type RawRecord struct {
+	File
+	Data []byte
 }
 
 type PayloadSegment struct {

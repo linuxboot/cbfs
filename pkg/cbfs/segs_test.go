@@ -65,3 +65,10 @@ func TestReadSimple(t *testing.T) {
 		})
 	}
 }
+
+func TestConflict(t *testing.T) {
+	if err := RegisterFileReader(&SegReader{T: 2, N: "CBFSRaw", F: nil}); err == nil {
+		t.Fatalf("Registering conflicting entry to type 2, want error, got nil")
+	}
+
+}

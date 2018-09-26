@@ -46,7 +46,7 @@ func NewSegs(in io.Reader) ([]ReadWriter, error) {
 		if string(m[:]) != FileMagic {
 			continue
 		}
-		Debug("It is an LARCHIVE at %#x", int(r.Count()) - len(FileMagic))
+		Debug("It is an LARCHIVE at %#x", int(r.Count())-len(FileMagic))
 		if err := Read(r, &f.FileHeader); err != nil {
 			Debug("Reading the File failed: %v", err)
 			return nil, err
@@ -57,8 +57,8 @@ func NewSegs(in io.Reader) ([]ReadWriter, error) {
 			return nil, fmt.Errorf("%v: unknown type %v", f, f.Type)
 		}
 		headSize := r.Count() - recStart
-		Debug("Namelen %d %d ", f.Offset, f.Offset - headSize)
-		n, err := ReadName(r, &f, f.Offset - headSize)
+		Debug("Namelen %d %d ", f.Offset, f.Offset-headSize)
+		n, err := ReadName(r, &f, f.Offset-headSize)
 		if err != nil {
 			return nil, err
 		}
