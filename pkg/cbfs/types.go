@@ -30,7 +30,7 @@ const (
 	TypeDeleted2   FileType = 0xffffffff
 	TypeDeleted             = 0
 	TypeStage               = 0x10
-	TypeSelf                = 0x20
+	TypeSELF                = 0x20
 	TypeFIT                 = 0x21
 	TypeOptionRom           = 0x30
 	TypeBootSplash          = 0x40
@@ -193,8 +193,8 @@ type CMOSLayoutRecord struct {
 	Data []byte
 }
 
-type PayloadSegment struct {
-	PayloadType uint32
+type PayloadHeader struct {
+	Type        uint32
 	Compression uint32
 	Offset      uint32
 	LoadAddress uint64
@@ -202,9 +202,10 @@ type PayloadSegment struct {
 	MemSize     uint32
 }
 
-type Payload struct {
+type PayloadRecord struct {
 	File
-	Segs []PayloadSegment
+	Segs []PayloadHeader
+	Data []byte
 }
 
 // fix this mess later to use characters, not constants.
