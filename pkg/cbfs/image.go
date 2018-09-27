@@ -22,15 +22,15 @@ func RegisterFileReader(f *SegReader) error {
 	return nil
 }
 
-func NewSegs(in io.Reader) ([]ReadWriter, error) {
+func NewImage(in io.Reader) (*Image, error) {
+	var i = &Image{}
 	r := NewCountingReader(in)
-	var segs []ReadWriter
 	for {
 		var f File
 		var m Magic
 		err := Align(r)
 		if err == io.EOF {
-			return segs, nil
+			return i, nil
 		}
 		if err != nil {
 			return nil, err
@@ -38,7 +38,7 @@ func NewSegs(in io.Reader) ([]ReadWriter, error) {
 		recStart := r.Count()
 		err = Read(r, m[:])
 		if err == io.EOF {
-			return segs, nil
+			return i, nil
 		}
 		if err != nil {
 			return nil, err
@@ -70,8 +70,16 @@ func NewSegs(in io.Reader) ([]ReadWriter, error) {
 			return nil, err
 		}
 		Debug("Segment was readable")
-		segs = append(segs, s)
+		i.Segs = append(i.Segs, s)
 		Debug("r.Count is now %#x", r.Count())
 	}
-	return segs, nil
+	return i, nil
+}
+
+func (i*Image) String() string {
+	var s = "Name			Offset	Type	Size	Comp\n"
+	for _, seg := range i.Segs {
+		s = s + seg.String() + "\n"
+	}
+	return s
 }

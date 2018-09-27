@@ -271,3 +271,7 @@ func (r *Reader) Read(b []byte) (int, error) {
 func (r *Reader) Count() uint32 {
 	return uint32(atomic.LoadUint64(&r.c))
 }
+
+type Image struct {
+	Segs []ReadWriter
+}

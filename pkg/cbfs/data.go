@@ -19,4 +19,18 @@ var (
 		/*000000d0*/ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, //|................|
 
 	}
+	ListOutput = `FMAP REGION: COREBOOT
+Name                           Offset     Type           Size   Comp
+cbfs master header             0x0        cbfs header        32 none
+fallback/romstage              0x80       stage           15812 none
+fallback/ramstage              0x3ec0     stage           52417 none
+config                         0x10bc0    raw               355 none
+revision                       0x10d80    raw               576 none
+cmos_layout.bin                0x11000    cmos_layout       548 none
+fallback/dsdt.aml              0x11280    raw              6952 none
+fallback/payload               0x12e00    simple elf         28 none
+(empty)                        0x12e80    null           183192 none
+bootblock                      0x3fa40    bootblock         880 none
+`
+	
 )

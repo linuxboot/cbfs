@@ -13,11 +13,11 @@ func TestReadFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	s, err := NewSegs(f)
+	i, err := NewImage(f)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("%s", s)
+	t.Logf("%s", i)
 }
 
 func TestBogusArchives(t *testing.T) {
@@ -32,7 +32,7 @@ func TestBogusArchives(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.n, func(t *testing.T) {
-			_, err := NewSegs(tc.r)
+			_, err := NewImage(tc.r)
 			if err == nil {
 				t.Errorf("got nil, want %v", tc.want)
 				return
@@ -57,7 +57,7 @@ func TestReadSimple(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.n, func(t *testing.T) {
 			r := bytes.NewReader(tc.b)
-			_, err := NewSegs(r)
+			_, err := NewImage(r)
 			if err != nil {
 				t.Errorf("got %v, want nil", err)
 				return
@@ -69,6 +69,23 @@ func TestReadSimple(t *testing.T) {
 func TestConflict(t *testing.T) {
 	if err := RegisterFileReader(&SegReader{T: 2, N: "CBFSRaw", F: nil}); err == nil {
 		t.Fatalf("Registering conflicting entry to type 2, want error, got nil")
+	}
+
+}
+
+func TestStringer(t *testing.T) {
+	f, err := os.Open("testdata/coreboot.rom")
+	if err != nil {
+		t.Fatal(err)
+	}
+	i, err := NewImage(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := i.String()
+
+	if s != ListOutput {
+		t.Errorf("got %s, want %s", s, ListOutput)
 	}
 
 }
