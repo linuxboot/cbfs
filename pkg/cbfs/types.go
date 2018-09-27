@@ -29,6 +29,7 @@ const (
 	// FOV
 	TypeDeleted2   FileType = 0xffffffff
 	TypeDeleted             = 0
+	TypeBootBlock           = 0x1
 	TypeStage               = 0x10
 	TypeSELF                = 0x20
 	TypeFIT                 = 0x21
@@ -189,6 +190,11 @@ type RawRecord struct {
 }
 
 type CMOSLayoutRecord struct {
+	File
+	Data []byte
+}
+
+type BootBlockRecord struct {
 	File
 	Data []byte
 }
