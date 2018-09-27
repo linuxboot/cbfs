@@ -32,5 +32,4 @@ fallback/payload               0x12e00    simple elf         28 none
 (empty)                        0x12e80    null           183192 none
 bootblock                      0x3fa40    bootblock         880 none
 `
-	
 )

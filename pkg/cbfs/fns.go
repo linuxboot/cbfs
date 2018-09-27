@@ -50,3 +50,65 @@ func Align(r CountingReader) error {
 	amt := align - int(r.Count())
 	return Read(r, junk[:amt])
 }
+
+func (c Compression) String() string {
+	switch c {
+	case None:
+		return "none"
+	case LZMA:
+		return "lzma"
+	case LZ4:
+		return "lz4"
+	}
+	return "unknown"
+}
+
+func (f FileType) String() string {
+	switch f {
+	case TypeDeleted2:
+		return "TypeDeleted2"
+	case TypeDeleted:
+		return "TypeDeleted"
+	case TypeMaster:
+		return "cbfs master header"
+	case TypeBootBlock:
+		return "TypeBootBlock"
+	case TypeStage:
+		return "TypeStage"
+	case TypeSELF:
+		return "TypeSELF"
+	case TypeFIT:
+		return "TypeFIT"
+	case TypeOptionRom:
+		return "TypeOptionRom"
+	case TypeBootSplash:
+		return "TypeBootSplash"
+	case TypeRaw:
+		return "TypeRaw"
+	case TypeVSA:
+		return "TypeVSA"
+	case TypeMBI:
+		return "TypeMBI"
+	case TypeMicroCode:
+		return "TypeMicroCode"
+	case TypeFSP:
+		return "TypeFSP"
+	case TypeMRC:
+		return "TypeMRC"
+	case TypeMMA:
+		return "TypeMMA"
+	case TypeEFI:
+		return "TypeEFI"
+	case TypeStruct:
+		return "TypeStruct"
+	case TypeCMOS:
+		return "TypeCMOS"
+	case TypeSPD:
+		return "TypeSPD"
+	case TypeMRCCache:
+		return "TypeMRCCache"
+	case TypeCMOSLayout:
+		return "TypeCMOSLayout"
+	}
+	return fmt.Sprintf("%#x", uint32(f))
+}

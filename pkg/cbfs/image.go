@@ -23,7 +23,7 @@ func RegisterFileReader(f *SegReader) error {
 }
 
 func NewImage(in io.Reader) (*Image, error) {
-	var i = &Image{}
+	var i = &Image{Offset: -1}
 	r := NewCountingReader(in)
 	for {
 		var f File
@@ -47,6 +47,9 @@ func NewImage(in io.Reader) (*Image, error) {
 			continue
 		}
 		Debug("It is an LARCHIVE at %#x", int(r.Count())-len(FileMagic))
+		if i.Offset < 0 {
+			i.Offset = int(recStart)
+		}
 		if err := Read(r, &f.FileHeader); err != nil {
 			Debug("Reading the File failed: %v", err)
 			return nil, err
@@ -76,7 +79,7 @@ func NewImage(in io.Reader) (*Image, error) {
 	return i, nil
 }
 
-func (i*Image) String() string {
+func (i *Image) String() string {
 	var s = "Name			Offset	Type	Size	Comp\n"
 	for _, seg := range i.Segs {
 		s = s + seg.String() + "\n"

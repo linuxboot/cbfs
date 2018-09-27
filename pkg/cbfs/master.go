@@ -1,16 +1,17 @@
 package cbfs
 
 import (
+	"fmt"
 	"log"
 )
 
 func init() {
-	if err := RegisterFileReader(&SegReader{T: 2, N: "CBFSHeader", F: NewHeader}); err != nil {
+	if err := RegisterFileReader(&SegReader{T: 2, N: "CBFSMaster", F: NewMaster}); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func NewHeader(r CountingReader, f *File) (ReadWriter, error) {
+func NewMaster(r CountingReader, f *File) (ReadWriter, error) {
 	h := &MasterRecord{File: *f}
 	Debug("Before Header: total bytes read: %d", r.Count())
 	if err := Read(r, &h.MasterHeader); err != nil {
@@ -29,6 +30,6 @@ func (h *MasterRecord) Write([]byte) (int, error) {
 	return -1, nil
 }
 
-func (H *MasterRecord) String() string {
-	return ""
+func (h *MasterRecord) String() string {
+	return fmt.Sprintf("%s\t%#x\t%s\t%d\t%s", h.Name, h.Offset, h.Type.String(), h.Size, "none")
 }

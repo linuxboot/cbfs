@@ -11,8 +11,10 @@ type Props struct {
 	Size   uint32
 }
 
+type Compression uint32
+
 const (
-	None uint32 = iota
+	None Compression = iota
 	LZMA
 	LZ4
 )
@@ -30,6 +32,7 @@ const (
 	TypeDeleted2   FileType = 0xffffffff
 	TypeDeleted             = 0
 	TypeBootBlock           = 0x1
+	TypeMaster              = 0x2
 	TypeStage               = 0x10
 	TypeSELF                = 0x20
 	TypeFIT                 = 0x21
@@ -114,7 +117,7 @@ const (
 type FileAttrCompression struct {
 	Tag              Tag
 	Size             uint32
-	Compression      uint32
+	Compression      Compression
 	DecompressedSize uint32
 }
 
@@ -171,7 +174,7 @@ const (
 )
 
 type StageHeader struct {
-	Compression uint32
+	Compression Compression
 	Entry       uint64
 	LoadAddress uint64
 	Size        uint32
@@ -206,7 +209,7 @@ type BootBlockRecord struct {
 
 type PayloadHeader struct {
 	Type        uint32
-	Compression uint32
+	Compression Compression
 	Offset      uint32
 	LoadAddress uint64
 	Size        uint32
@@ -234,7 +237,7 @@ const (
 
 type OptionRom struct {
 	File
-	Compression uint32
+	Compression Compression
 	Size        uint32
 }
 
@@ -274,4 +277,8 @@ func (r *Reader) Count() uint32 {
 
 type Image struct {
 	Segs []ReadWriter
+	// CBFS is self-contained.
+	// Hence the offset is always reported as the offset from the master record,
+	// not the start of flash.
+	Offset int
 }
