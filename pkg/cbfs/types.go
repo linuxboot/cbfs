@@ -188,6 +188,11 @@ type RawRecord struct {
 	Data []byte
 }
 
+type CMOSLayoutRecord struct {
+	File
+	Data []byte
+}
+
 type PayloadSegment struct {
 	PayloadType uint32
 	Compression uint32
