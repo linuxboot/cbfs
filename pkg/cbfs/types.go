@@ -189,6 +189,11 @@ type RawRecord struct {
 	Data []byte
 }
 
+type EmptyRecord struct {
+	File
+	Data []byte
+}
+
 type CMOSLayoutRecord struct {
 	File
 	Data []byte
