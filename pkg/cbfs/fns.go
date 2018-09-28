@@ -5,10 +5,9 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"log"
 )
 
-var Debug = log.Printf
+var Debug = func(format string, v ...interface{}){}
 
 // Read reads things in in BE format, which they are supposed to be in.
 func Read(r io.Reader, f interface{}) error {
