@@ -105,11 +105,6 @@ func NewImage(in io.ReadSeeker) (*Image, error) {
 }
 
 func (i *Image) String() string {
-	_ = `
- 		Name                           Offset     Type           Size   Comp
-	image_test.go:88: got Name		Offset	Type	Size		Comp
-		cbfs master header		0x0	cbfs header	32	none
-`
 	var s = "FMAP REGION: COREBOOT\nName\t\t\t\tOffset\tType\t\tSize\tComp\n"
 	for _, seg := range i.Segs {
 		s = s + seg.String() + "\n"
