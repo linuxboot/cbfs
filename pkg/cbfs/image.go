@@ -110,7 +110,23 @@ func (i *Image) WriteFile(name string, perm os.FileMode) error {
 	if err != nil {
 		return err
 	}
-	return fmap.Write(f, i.FMAP, i.FMAPMetadata)
+	if err := fmap.Write(f, i.FMAP, i.FMAPMetadata); err != nil {
+		return err
+	}
+	Debug("Wrote the fmap")
+	w, err := f.Seek(0, 1)
+	if err != nil {
+		return err
+	}
+	Debug("Wrote fmap for %d bytes, offset is %d", w, i.Offset)
+	ff := make([]byte, 512 - int(w))
+	for i := range ff {
+		ff[i] = 0xff
+	}
+	if _, err := f.Write(ff); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (i *Image) String() string {

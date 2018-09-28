@@ -9,7 +9,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/linuxboot/fiano/pkg/fmap"
 )
 
 func TestReadFile(t *testing.T) {
@@ -92,6 +91,7 @@ func TestStringer(t *testing.T) {
 }
 
 func TestSimpleWrite(t *testing.T) {
+	Debug = t.Logf
 	f, err := os.Open("testdata/coreboot.rom")
 	if err != nil {
 		t.Fatal(err)
@@ -105,11 +105,16 @@ func TestSimpleWrite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := fmap.Write(out, i.FMAP, i.FMAPMetadata); err != nil {
+	if err := i.WriteFile(out.Name(), 0666); err != nil {
 		t.Fatal(err)
 	}
 	out.Close()
 
+	fi, err := os.Stat(out.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("output file %v", fi)
 	old, err := ioutil.ReadFile("testdata/coreboot.rom")
 	if err != nil {
 		t.Fatal(err)
