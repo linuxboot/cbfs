@@ -141,6 +141,10 @@ func (i *Image) WriteFile(name string, perm os.FileMode) error {
 	return nil
 }
 
+// Update creates a new []byte for the cbfs. It is complicated a lot
+// by the fact that endianness is not consistent in cbfs images.
+func (i*Image) Update() error{
+}
 func (i *Image) String() string {
 	var s = "FMAP REGION: COREBOOT\nName\t\t\t\tOffset\tType\t\tSize\tComp\n"
 	for _, seg := range i.Segs {

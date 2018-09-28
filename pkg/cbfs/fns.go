@@ -17,9 +17,25 @@ func Read(r io.Reader, f interface{}) error {
 	return nil
 }
 
-// Read LE reads things in LE format, which the spec says it is not in.
+// ReadLE reads things in LE format, which the spec says it is not in.
 func ReadLE(r io.Reader, f interface{}) error {
 	if err := binary.Read(r, binary.LittleEndian, f); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Write reads things in in BE format, which they are supposed to be in.
+func Write(w io.Writer, f interface{}) error {
+	if err := binary.Writer(r, Endian, f); err != nil {
+		return err
+	}
+	return nil
+}
+
+// WriteLE reads things in LE format, which the spec says it is not in.
+func WriteLE(r io.Writer, f interface{}) error {
+	if err := binary.Writer(r, binary.LittleEndian, f); err != nil {
 		return err
 	}
 	return nil
