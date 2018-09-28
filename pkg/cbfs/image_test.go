@@ -8,7 +8,6 @@ import (
 	"os"
 	"reflect"
 	"testing"
-
 )
 
 func TestReadFile(t *testing.T) {

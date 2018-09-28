@@ -121,7 +121,7 @@ func (i *Image) WriteFile(name string, perm os.FileMode) error {
 	if err != nil {
 		return err
 	}
-	// do the simple thing, fill the file with 0xff and then write the things 
+	// do the simple thing, fill the file with 0xff and then write the things
 	ff := make([]byte, i.FMAP.Size)
 	for i := range ff {
 		ff[i] = 0xff
