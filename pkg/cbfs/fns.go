@@ -7,7 +7,7 @@ import (
 	"io"
 )
 
-var Debug = func(format string, v ...interface{}){}
+var Debug = func(format string, v ...interface{}) {}
 
 // Read reads things in in BE format, which they are supposed to be in.
 func Read(r io.Reader, f interface{}) error {

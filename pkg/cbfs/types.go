@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"io"
 	"sync/atomic"
+
+	"github.com/linuxboot/fiano/pkg/fmap"
 )
 
 type Props struct {
@@ -281,5 +283,10 @@ type Image struct {
 	// CBFS is self-contained.
 	// Hence the offset is always reported as the offset from the master record,
 	// not the start of flash.
+	// We record the offset of the image in flash here, though it's not clear we
+	// need to.
 	Offset int
+	// Scarf away the fmap info.
+	FMAP         *fmap.FMap
+	FMAPMetadata *fmap.Metadata
 }

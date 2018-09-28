@@ -3,6 +3,7 @@ package cbfs
 import (
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/linuxboot/fiano/pkg/fmap"
 )
@@ -25,12 +26,12 @@ func RegisterFileReader(f *SegReader) error {
 }
 
 func NewImage(in io.ReadSeeker) (*Image, error) {
-	var i = &Image{Offset: -1}
-	f, _, err := fmap.Read(in)
+	f, m, err := fmap.Read(in)
 	if err != nil {
 		return nil, err
 	}
 	Debug("Fmap %v", f)
+	var i = &Image{Offset: -1, FMAP: f, FMAPMetadata: m}
 	var x = int(-1)
 	for i, a := range f.Areas {
 		Debug("Check %v", a.Name.String())
@@ -102,6 +103,14 @@ func NewImage(in io.ReadSeeker) (*Image, error) {
 		Debug("r.Count is now %#x", r.Count())
 	}
 	return i, nil
+}
+
+func (i *Image) WriteFile(name string, perm os.FileMode) error {
+	f, err := os.OpenFile(name, os.O_WRONLY|os.O_CREATE, perm)
+	if err != nil {
+		return err
+	}
+	return fmap.Write(f, i.FMAP, i.FMAPMetadata)
 }
 
 func (i *Image) String() string {

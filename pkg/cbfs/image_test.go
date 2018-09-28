@@ -4,8 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"reflect"
 	"testing"
+
+	"github.com/linuxboot/fiano/pkg/fmap"
 )
 
 func TestReadFile(t *testing.T) {
@@ -85,4 +89,37 @@ func TestStringer(t *testing.T) {
 	s := i.String()
 
 	t.Logf("Image string: %v", s)
+}
+
+func TestSimpleWrite(t *testing.T) {
+	f, err := os.Open("testdata/coreboot.rom")
+	if err != nil {
+		t.Fatal(err)
+	}
+	i, err := NewImage(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.Close()
+	out, err := ioutil.TempFile("", "cbfs")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := fmap.Write(out, i.FMAP, i.FMAPMetadata); err != nil {
+		t.Fatal(err)
+	}
+	out.Close()
+
+	old, err := ioutil.ReadFile("testdata/coreboot.rom")
+	if err != nil {
+		t.Fatal(err)
+	}
+	new, err := ioutil.ReadFile(out.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(old, new) {
+		t.Fatalf("testdata/coreboot.rom and %s differ", out.Name())
+	}
+
 }
