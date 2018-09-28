@@ -83,15 +83,16 @@ type Magic [8]byte
 const FileSize = 16
 
 type FileHeader struct {
-	Size       uint32
-	Type       FileType
-	AttrOffset uint32
-	SubHeaderOffset     uint32
+	Size            uint32
+	Type            FileType
+	AttrOffset      uint32
+	SubHeaderOffset uint32
 }
 
 type File struct {
 	FileHeader
-	Name string
+	RomOffset uint32
+	Name      string
 }
 
 // The common fields of extended cbfs file attributes.

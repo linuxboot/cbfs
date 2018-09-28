@@ -31,6 +31,6 @@ func (h *BootBlockRecord) Write([]byte) (int, error) {
 	return -1, nil
 }
 
-func (H *BootBlockRecord) String() string {
-	return ""
+func (h *BootBlockRecord) String() string {
+	return recString(h.Name, h.RomOffset, h.Type.String(), h.Size, "none")
 }

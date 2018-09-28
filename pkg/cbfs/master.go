@@ -1,7 +1,6 @@
 package cbfs
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -31,5 +30,5 @@ func (h *MasterRecord) Write([]byte) (int, error) {
 }
 
 func (h *MasterRecord) String() string {
-	return fmt.Sprintf("%s\t%#x\t%s\t%d\t%s", h.Name, h.SubHeaderOffset, h.Type.String(), h.Size, "none")
+	return recString(h.Name, h.RomOffset, h.Type.String(), h.Size, "none")
 }

@@ -78,6 +78,7 @@ func NewImage(in io.ReadSeeker) (*Image, error) {
 			Debug("Reading the File failed: %v", err)
 			return nil, err
 		}
+		f.RomOffset = recStart
 		Debug("It is %v type %v", f, f.Type)
 		sr, ok := SegReaders[f.Type]
 		if !ok {
@@ -90,7 +91,7 @@ func NewImage(in io.ReadSeeker) (*Image, error) {
 			return nil, err
 		}
 		f.Name = n
-		Debug("Counbt after name is %#x", r.Count())
+		Debug("Count after name is %#x", r.Count())
 		Debug("Found a SegReader for this %d size section: %v", f.Size, n)
 		s, err := sr.F(r, &f)
 		if err != nil {
@@ -104,7 +105,12 @@ func NewImage(in io.ReadSeeker) (*Image, error) {
 }
 
 func (i *Image) String() string {
-	var s = "Name			Offset	Type	Size	Comp\n"
+	_ = `
+ 		Name                           Offset     Type           Size   Comp
+	image_test.go:88: got Name		Offset	Type	Size		Comp
+		cbfs master header		0x0	cbfs header	32	none
+`
+	var s = "FMAP REGION: COREBOOT\nName\t\t\t\tOffset\tType\t\tSize\tComp\n"
 	for _, seg := range i.Segs {
 		s = s + seg.String() + "\n"
 	}

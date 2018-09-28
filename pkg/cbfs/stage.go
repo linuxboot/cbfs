@@ -36,11 +36,15 @@ func (h *StageRecord) Write([]byte) (int, error) {
 	return -1, nil
 }
 
-func (h *StageRecord) String() string {
+func (h *StageHeader) String() string {
 	return fmt.Sprintf("Compression %#x Entry %#x LoadAddress %#x Size %#x MemSize %#x",
 		h.Compression,
 		h.Entry,
 		h.LoadAddress,
 		h.Size,
 		h.MemSize)
+}
+
+func (h *StageRecord) String() string {
+	return recString(h.Name, h.RomOffset, h.Type.String(), h.Size, h.Compression.String())
 }

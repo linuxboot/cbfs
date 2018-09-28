@@ -44,7 +44,11 @@ func (h *PayloadRecord) Write([]byte) (int, error) {
 }
 
 func (h *PayloadRecord) String() string {
-	return "Fix me"
+	s := recString(h.Name, h.RomOffset, h.Type.String(), h.Size, "none")
+	for i, seg := range h.Segs {
+		s += recString(fmt.Sprintf("\n\tSeg #%d\t", i), seg.Offset, "Payload segment", seg.Size, seg.Compression.String())
+	}
+	return s
 }
 
 func (h *PayloadHeader) String() string {

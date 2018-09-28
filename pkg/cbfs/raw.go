@@ -25,6 +25,6 @@ func (h *RawRecord) Write([]byte) (int, error) {
 	return -1, nil
 }
 
-func (H *RawRecord) String() string {
-	return ""
+func (h *RawRecord) String() string {
+	return recString(h.Name, h.RomOffset, h.Type.String(), h.Size, "none")
 }

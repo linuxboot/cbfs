@@ -25,6 +25,6 @@ func (h *CMOSLayoutRecord) Write([]byte) (int, error) {
 	return -1, nil
 }
 
-func (H *CMOSLayoutRecord) String() string {
-	return ""
+func (h *CMOSLayoutRecord) String() string {
+	return recString(h.Name, h.RomOffset, h.Type.String(), h.Size, "none")
 }

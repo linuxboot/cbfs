@@ -35,6 +35,6 @@ func (h *EmptyRecord) Write([]byte) (int, error) {
 	return -1, nil
 }
 
-func (H *EmptyRecord) String() string {
-	return ""
+func (h *EmptyRecord) String() string {
+	return recString("(empty)", h.RomOffset, h.Type.String(), h.Size, "none")
 }
