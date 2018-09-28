@@ -3,6 +3,8 @@ package cbfs
 import (
 	"fmt"
 	"io"
+
+	"github.com/linuxboot/fiano/pkg/fmap"
 )
 
 type SegReader struct {
@@ -22,9 +24,31 @@ func RegisterFileReader(f *SegReader) error {
 	return nil
 }
 
-func NewImage(in io.Reader) (*Image, error) {
+func NewImage(in io.ReadSeeker) (*Image, error) {
 	var i = &Image{Offset: -1}
-	r := NewCountingReader(in)
+	f, _, err := fmap.Read(in)
+	if err != nil {
+		return nil, err
+	}
+	Debug("Fmap %v", f)
+	var x = int(-1)
+	for i, a := range f.Areas {
+		Debug("Check %v", a.Name.String())
+		if a.Name.String() == "COREBOOT" {
+			x = i
+			break
+		}
+	}
+	if x == -1 {
+		return nil, fmt.Errorf("No CBFS in fmap")
+	}
+	Debug("COREBOOT is the %d entry", x)
+	fr, err := f.ReadArea(in, x)
+	if err != nil {
+		return nil, err
+	}
+	r := NewCountingReader(fr)
+
 	for {
 		var f File
 		var m Magic
@@ -60,8 +84,8 @@ func NewImage(in io.Reader) (*Image, error) {
 			return nil, fmt.Errorf("%v: unknown type %v", f, f.Type)
 		}
 		headSize := r.Count() - recStart
-		Debug("Namelen %d %d ", f.Offset, f.Offset-headSize)
-		n, err := ReadName(r, &f, f.Offset-headSize)
+		Debug("Namelen %d %d ", f.SubHeaderOffset, f.SubHeaderOffset-headSize)
+		n, err := ReadName(r, &f, f.SubHeaderOffset-headSize)
 		if err != nil {
 			return nil, err
 		}

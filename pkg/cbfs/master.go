@@ -18,7 +18,7 @@ func NewMaster(r CountingReader, f *File) (ReadWriter, error) {
 		Debug("Header read: %v", err)
 		return nil, err
 	}
-	Debug("Got header %v", *h)
+	Debug("Got header %s offset %#x", h.String(), h.Offset)
 	return h, nil
 }
 
@@ -31,5 +31,5 @@ func (h *MasterRecord) Write([]byte) (int, error) {
 }
 
 func (h *MasterRecord) String() string {
-	return fmt.Sprintf("%s\t%#x\t%s\t%d\t%s", h.Name, h.Offset, h.Type.String(), h.Size, "none")
+	return fmt.Sprintf("%s\t%#x\t%s\t%d\t%s", h.Name, h.SubHeaderOffset, h.Type.String(), h.Size, "none")
 }

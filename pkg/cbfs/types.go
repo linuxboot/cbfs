@@ -86,7 +86,7 @@ type FileHeader struct {
 	Size       uint32
 	Type       FileType
 	AttrOffset uint32
-	Offset     uint32
+	SubHeaderOffset     uint32
 }
 
 type File struct {

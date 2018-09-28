@@ -23,7 +23,7 @@ func TestReadFile(t *testing.T) {
 func TestBogusArchives(t *testing.T) {
 	var tests = []struct {
 		n    string
-		r    io.Reader
+		r    io.ReadSeeker
 		want string
 	}{
 		{"Short", bytes.NewReader([]byte("INUXARCHIV")), "unexpected EOF"},
