@@ -105,6 +105,7 @@ func TestSimpleWrite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer os.Remove(out.Name())
 	if err := i.WriteFile(out.Name(), 0666); err != nil {
 		t.Fatal(err)
 	}

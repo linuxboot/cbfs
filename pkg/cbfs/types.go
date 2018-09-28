@@ -289,4 +289,7 @@ type Image struct {
 	// Scarf away the fmap info.
 	FMAP         *fmap.FMap
 	FMAPMetadata *fmap.Metadata
+	Index int
+	// And all the data.
+	Data []byte
 }

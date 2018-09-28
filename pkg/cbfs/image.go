@@ -3,6 +3,7 @@ package cbfs
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 
 	"github.com/linuxboot/fiano/pkg/fmap"
@@ -26,12 +27,21 @@ func RegisterFileReader(f *SegReader) error {
 }
 
 func NewImage(in io.ReadSeeker) (*Image, error) {
+	// Suck the image in. Todo: write a thing that implements
+	// ReadSeeker on a []byte.
+	b, err := ioutil.ReadAll(in)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := in.Seek(0, 0); err != nil {
+		return nil, err
+	}
 	f, m, err := fmap.Read(in)
 	if err != nil {
 		return nil, err
 	}
 	Debug("Fmap %v", f)
-	var i = &Image{Offset: -1, FMAP: f, FMAPMetadata: m}
+	var i = &Image{Offset: -1, FMAP: f, FMAPMetadata: m, Data: b}
 	var x = int(-1)
 	for i, a := range f.Areas {
 		Debug("Check %v", a.Name.String())
@@ -43,6 +53,7 @@ func NewImage(in io.ReadSeeker) (*Image, error) {
 	if x == -1 {
 		return nil, fmt.Errorf("No CBFS in fmap")
 	}
+	i.Index = x
 	Debug("COREBOOT is the %d entry", x)
 	fr, err := f.ReadArea(in, x)
 	if err != nil {
@@ -110,22 +121,23 @@ func (i *Image) WriteFile(name string, perm os.FileMode) error {
 	if err != nil {
 		return err
 	}
-	if err := fmap.Write(f, i.FMAP, i.FMAPMetadata); err != nil {
-		return err
-	}
-	Debug("Wrote the fmap")
-	w, err := f.Seek(0, 1)
-	if err != nil {
-		return err
-	}
-	Debug("Wrote fmap for %d bytes, offset is %d", w, i.Offset)
-	ff := make([]byte, 512 - int(w))
+	// do the simple thing, fill the file with 0xff and then write the things 
+	ff := make([]byte, i.FMAP.Size)
 	for i := range ff {
 		ff[i] = 0xff
 	}
-	if _, err := f.Write(ff); err != nil {
+	if _, err := f.WriteAt(ff, 0); err != nil {
 		return err
 	}
+	if err := fmap.Write(f, i.FMAP, i.FMAPMetadata); err != nil {
+		return err
+	}
+	for _, a := range i.FMAP.Areas {
+		if _, err := f.WriteAt(i.Data[a.Offset:a.Size], int64(a.Offset)); err != nil {
+			return err
+		}
+	}
+	Debug("Wrote the fmap")
 	return nil
 }
 
