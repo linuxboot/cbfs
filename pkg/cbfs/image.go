@@ -143,12 +143,33 @@ func (i *Image) WriteFile(name string, perm os.FileMode) error {
 
 // Update creates a new []byte for the cbfs. It is complicated a lot
 // by the fact that endianness is not consistent in cbfs images.
-func (i*Image) Update() error{
+func (i *Image) Update() error {
+	return fmt.Errorf("not yet")
 }
+
 func (i *Image) String() string {
 	var s = "FMAP REGION: COREBOOT\nName\t\t\t\tOffset\tType\t\tSize\tComp\n"
 	for _, seg := range i.Segs {
 		s = s + seg.String() + "\n"
 	}
 	return s
+}
+
+func (i *Image) Remove(n string) error {
+	found := -1
+	for x, s := range i.Segs {
+		if s.Name() == n {
+			found = x
+		}
+	}
+	if found == -1 {
+		return os.ErrExist
+	}
+	// You can not remove the master header or the boot block.
+	// Just remake the cbfs if you're doing that kind of surgery.
+	if found == 0 || found == len(i.Segs)-1 {
+		return os.ErrPermission
+	}
+	i.Segs = append(i.Segs[:found], i.Segs[found:]...)
+	return nil
 }

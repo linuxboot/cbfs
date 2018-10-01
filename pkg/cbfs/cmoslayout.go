@@ -26,5 +26,9 @@ func (h *CMOSLayoutRecord) Write([]byte) (int, error) {
 }
 
 func (h *CMOSLayoutRecord) String() string {
-	return recString(h.Name, h.RomOffset, h.Type.String(), h.Size, "none")
+	return recString(h.File.Name, h.RomOffset, h.Type.String(), h.Size, "none")
+}
+
+func (h *CMOSLayoutRecord) Name() string {
+	return h.File.Name
 }

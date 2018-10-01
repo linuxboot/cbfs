@@ -27,7 +27,7 @@ func ReadLE(r io.Reader, f interface{}) error {
 
 // Write reads things in in BE format, which they are supposed to be in.
 func Write(w io.Writer, f interface{}) error {
-	if err := binary.Writer(r, Endian, f); err != nil {
+	if err := binary.Write(w, Endian, f); err != nil {
 		return err
 	}
 	return nil
@@ -35,7 +35,7 @@ func Write(w io.Writer, f interface{}) error {
 
 // WriteLE reads things in LE format, which the spec says it is not in.
 func WriteLE(r io.Writer, f interface{}) error {
-	if err := binary.Writer(r, binary.LittleEndian, f); err != nil {
+	if err := binary.Write(r, binary.LittleEndian, f); err != nil {
 		return err
 	}
 	return nil

@@ -128,3 +128,46 @@ func TestSimpleWrite(t *testing.T) {
 	}
 
 }
+
+func TestRemovePayload(t *testing.T) {
+	Debug = t.Logf
+	f, err := os.Open("testdata/coreboot.rom")
+	if err != nil {
+		t.Fatal(err)
+	}
+	i, err := NewImage(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.Close()
+	out, err := ioutil.TempFile("", "cbfs")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(out.Name())
+	if err := i.Remove("fallback/payload"); err != nil {
+		t.Fatal(err)
+	}
+	if err := i.WriteFile(out.Name(), 0666); err != nil {
+		t.Fatal(err)
+	}
+	out.Close()
+
+	fi, err := os.Stat(out.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("output file %v", fi)
+	old, err := ioutil.ReadFile("testdata/coreboot.rom")
+	if err != nil {
+		t.Fatal(err)
+	}
+	new, err := ioutil.ReadFile(out.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(old, new) {
+		t.Fatalf("testdata/coreboot.rom and %s differ", out.Name())
+	}
+
+}

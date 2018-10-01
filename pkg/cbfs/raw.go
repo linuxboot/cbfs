@@ -26,5 +26,9 @@ func (h *RawRecord) Write([]byte) (int, error) {
 }
 
 func (h *RawRecord) String() string {
-	return recString(h.Name, h.RomOffset, h.Type.String(), h.Size, "none")
+	return recString(h.File.Name, h.RomOffset, h.Type.String(), h.Size, "none")
+}
+
+func (h *RawRecord) Name() string {
+	return h.File.Name
 }

@@ -30,5 +30,9 @@ func (h *MasterRecord) Write([]byte) (int, error) {
 }
 
 func (h *MasterRecord) String() string {
-	return recString(h.Name, h.RomOffset, h.Type.String(), h.Size, "none")
+	return recString(h.File.Name, h.RomOffset, h.Type.String(), h.Size, "none")
+}
+
+func (h *MasterRecord) Name() string {
+	return h.File.Name
 }

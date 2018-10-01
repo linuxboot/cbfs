@@ -247,6 +247,7 @@ type OptionRom struct {
 // Each CBFS file type must implement at least this interface.
 type ReadWriter interface {
 	String() string
+	Name() string
 	Read([]byte) (int, error)
 	Write([]byte) (int, error)
 }

@@ -46,5 +46,9 @@ func (h *StageHeader) String() string {
 }
 
 func (h *StageRecord) String() string {
-	return recString(h.Name, h.RomOffset, h.Type.String(), h.Size, h.Compression.String())
+	return recString(h.File.Name, h.RomOffset, h.Type.String(), h.Size, h.Compression.String())
+}
+
+func (h *StageRecord) Name() string {
+	return h.File.Name
 }
