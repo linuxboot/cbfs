@@ -11,108 +11,96 @@ import (
 )
 
 type SegReader struct {
-	T FileType
-	F func(r CountingReader, f *File) (ReadWriter, error)
-	N string
+	Type FileType
+	New  func(f *File) (ReadWriter, error)
+	Name string
 }
 
 var SegReaders = make(map[FileType]*SegReader)
 
 func RegisterFileReader(f *SegReader) error {
-	if r, ok := SegReaders[f.T]; ok {
-		return fmt.Errorf("RegisterFileType: Slot of %v is owned by %s, can't add %s", r.T, r.N, f.N)
+	if r, ok := SegReaders[f.Type]; ok {
+		return fmt.Errorf("RegisterFileType: Slot of %v is owned by %s, can't add %s", r.Type, r.Name, f.Name)
 	}
-	SegReaders[f.T] = f
+	SegReaders[f.Type] = f
 	Debug("Registered %v", f)
 	return nil
 }
 
-func NewImage(in io.ReadSeeker) (*Image, error) {
+func NewImage(rs io.ReadSeeker) (*Image, error) {
 	// Suck the image in. Todo: write a thing that implements
 	// ReadSeeker on a []byte.
-	b, err := ioutil.ReadAll(in)
+	b, err := ioutil.ReadAll(rs)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ReadAll: %v", err)
 	}
-	if _, err := in.Seek(0, 0); err != nil {
-		return nil, err
-	}
+	in := bytes.NewReader(b)
 	f, m, err := fmap.Read(in)
 	if err != nil {
 		return nil, err
 	}
 	Debug("Fmap %v", f)
-	var i = &Image{Offset: -1, FMAP: f, FMAPMetadata: m, Data: b}
-	var x = int(-1)
-	for i, a := range f.Areas {
+	var i = &Image{FMAP: f, FMAPMetadata: m, Data: b}
+	for _, a := range f.Areas {
 		Debug("Check %v", a.Name.String())
 		if a.Name.String() == "COREBOOT" {
-			x = i
+			i.Area = &a
 			break
 		}
 	}
-	if x == -1 {
+	if i.Area == nil {
 		return nil, fmt.Errorf("No CBFS in fmap")
 	}
-	i.Index = x
-	Debug("COREBOOT is the %d entry", x)
-	fr, err := f.ReadArea(in, x)
-	if err != nil {
-		return nil, err
-	}
-	r := NewCountingReader(fr)
+	r := io.NewSectionReader(in, int64(i.Area.Offset), int64(i.Area.Size))
 
-	for {
+	for off := int64(0); off < int64(i.Area.Size); {
 		var f File
-		var m Magic
-		err := Align(r)
+		if _, err := r.Seek(off, io.SeekStart); err != nil {
+			return nil, err
+		}
+		err := Read(r, &f.FileHeader)
 		if err == io.EOF {
 			return i, nil
 		}
 		if err != nil {
 			return nil, err
 		}
-		recStart := r.Count()
-		err = Read(r, m[:])
-		if err == io.EOF {
-			return i, nil
-		}
-		if err != nil {
-			return nil, err
-		}
-		if string(m[:]) != FileMagic {
+		if string(f.Magic[:]) != FileMagic {
+			off += 16
 			continue
 		}
-		Debug("It is an LARCHIVE at %#x", int(r.Count())-len(FileMagic))
-		if i.Offset < 0 {
-			i.Offset = int(recStart)
-		}
-		if err := Read(r, &f.FileHeader); err != nil {
-			Debug("Reading the File failed: %v", err)
-			return nil, err
-		}
-		f.RomOffset = recStart
 		Debug("It is %v type %v", f, f.Type)
+		f.RecordStart = uint32(off)
+		nameStart, err := r.Seek(0, io.SeekCurrent)
+		if err != nil {
+			return nil, fmt.Errorf("Getting file offset for name: %v", err)
+		}
 		sr, ok := SegReaders[f.Type]
 		if !ok {
 			return nil, fmt.Errorf("%v: unknown type %v", f, f.Type)
 		}
-		headSize := r.Count() - recStart
-		Debug("Namelen %d %d ", f.SubHeaderOffset, f.SubHeaderOffset-headSize)
-		n, err := ReadName(r, &f, f.SubHeaderOffset-headSize)
+		n, err := ReadName(r, &f, f.SubHeaderOffset-(uint32(nameStart)-f.RecordStart))
 		if err != nil {
 			return nil, err
 		}
 		f.Name = n
-		Debug("Count after name is %#x", r.Count())
 		Debug("Found a SegReader for this %d size section: %v", f.Size, n)
-		s, err := sr.F(r, &f)
+		s, err := sr.New(&f)
 		if err != nil {
+			return nil, err
+		}
+		if err := s.Read(r); err != nil {
 			return nil, err
 		}
 		Debug("Segment was readable")
 		i.Segs = append(i.Segs, s)
-		Debug("r.Count is now %#x", r.Count())
+		off, err = r.Seek(0, io.SeekCurrent)
+		if err != nil {
+			return nil, err
+		}
+		// Force alignment.
+		off = (off + 15) & (^15)
+
 	}
 	return i, nil
 }
@@ -130,22 +118,25 @@ func (i *Image) Update() error {
 	// Because there can be gaps due to alignment of various
 	// components, we start out by filling i.Data with ff
 	// past the FMAP header.
-	for x := range(i.Data[512:]) {
+	for x := range i.Data[512:] {
 		i.Data[x+512] = 0xff
 	}
 	for _, s := range i.Segs {
 		var b bytes.Buffer
-		if err := s.Update(&b); err != nil {
+		if err := Write(&b, s.Header().FileHeader); err != nil {
 			return err
 		}
-		Debug("Copy %d bytes to i.Data[%d]", len(b.Bytes()), s.Header().RomOffset+512)
-		copy(i.Data[s.Header().RomOffset+512:], b.Bytes())
+		if err := s.Write(&b); err != nil {
+			return err
+		}
+		Debug("Copy %d bytes to i.Data[%d]", len(b.Bytes()), s.Header().RecordStart+512)
+		copy(i.Data[s.Header().RecordStart+512:], b.Bytes())
 	}
 	return nil
 }
 
 func (i *Image) String() string {
-	var s = "FMAP REGION: COREBOOT\nName\t\t\t\tOffset\tType\t\tSize\tComp\n"
+	var s = "FMAP REGIOName: COREBOOT\nName\t\t\t\tOffset\tType\t\tSize\tComp\n"
 	for _, seg := range i.Segs {
 		s = s + seg.String() + "\n"
 	}
@@ -155,7 +146,7 @@ func (i *Image) String() string {
 func (i *Image) Remove(n string) error {
 	found := -1
 	for x, s := range i.Segs {
-		if s.Name() == n {
+		if s.Header().Name == n {
 			found = x
 		}
 	}

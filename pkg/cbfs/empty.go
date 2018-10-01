@@ -1,50 +1,41 @@
 package cbfs
 
 import (
+	"fmt"
 	"io"
 	"log"
 )
 
 func init() {
-	if err := RegisterFileReader(&SegReader{T: TypeDeleted, N: "CBFSEmpty", F: NewEmpty}); err != nil {
+	if err := RegisterFileReader(&SegReader{Type: TypeDeleted, Name: "CBFSEmpty", New: NewEmpty}); err != nil {
 		log.Fatal(err)
 	}
-	if err := RegisterFileReader(&SegReader{T: TypeDeleted2, N: "CBFSEmpty", F: NewEmpty}); err != nil {
+	if err := RegisterFileReader(&SegReader{Type: TypeDeleted2, Name: "CBFSEmpty", New: NewEmpty}); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func NewEmpty(r CountingReader, f *File) (ReadWriter, error) {
-	h := &EmptyRecord{File: *f}
-	Debug("Before Empty: total bytes read: %d", r.Count())
-	Debug("Got header %v", *h)
-	h.Data = make([]byte, h.Size)
-	n, err := r.Read(h.Data)
+func NewEmpty(f *File) (ReadWriter, error) {
+	r := &EmptyRecord{File: *f}
+	Debug("Got header %v", *r)
+	r.Data = make([]byte, r.Size)
+	return r, nil
+}
+
+func (r *EmptyRecord) Read(in io.ReadSeeker) error {
+	_, err := in.Read(r.Data)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("empty read: %v", err)
 	}
-	Debug("Bootblock read %d bytes, now at %#x", n, r.Count())
-
-	return h, nil
-}
-
-func (r *EmptyRecord) Read([]byte) (int, error) {
-	return -1, nil
-}
-
-func (r *EmptyRecord) Write([]byte) (int, error) {
-	return -1, nil
+	Debug("Empty data read OK")
+	return nil
 }
 
 func (r *EmptyRecord) String() string {
-	return recString("(empty)", r.RomOffset, r.Type.String(), r.Size, "none")
+	return recString("(empty)", r.RecordStart, r.Type.String(), r.Size, "none")
 }
 
-func (r *EmptyRecord) Name() string {
-	return "(empty)"
-}
-
-func (r *EmptyRecord) Update(w io.Writer) error {
+func (r *EmptyRecord) Write(w io.Writer) error {
 	if err := Write(w, r.FileHeader); err != nil {
 		return err
 	}

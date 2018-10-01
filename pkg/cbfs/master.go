@@ -6,39 +6,30 @@ import (
 )
 
 func init() {
-	if err := RegisterFileReader(&SegReader{T: 2, N: "CBFSMaster", F: NewMaster}); err != nil {
+	if err := RegisterFileReader(&SegReader{Type: 2, Name: "CBFSMaster", New: NewMaster}); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func NewMaster(r CountingReader, f *File) (ReadWriter, error) {
-	h := &MasterRecord{File: *f}
-	Debug("Before Header: total bytes read: %d", r.Count())
-	if err := Read(r, &h.MasterHeader); err != nil {
-		Debug("Header read: %v", err)
-		return nil, err
+func NewMaster(f *File) (ReadWriter, error) {
+	r := &MasterRecord{File: *f}
+	return r, nil
+}
+
+func (r *MasterRecord) Read(in io.ReadSeeker) error {
+	if err := Read(in, &r.MasterHeader); err != nil {
+		Debug("MasterRecord read: %v", err)
+		return err
 	}
-	Debug("Got header %s offset %#x", h.String(), h.Offset)
-	return h, nil
-}
-
-func (r *MasterRecord) Read([]byte) (int, error) {
-	return -1, nil
-}
-
-func (r *MasterRecord) Write([]byte) (int, error) {
-	return -1, nil
+	Debug("Got header %s offset %#x", r.String(), r.Offset)
+	return nil
 }
 
 func (r *MasterRecord) String() string {
-	return recString(r.File.Name, r.RomOffset, r.Type.String(), r.Size, "none")
+	return recString(r.File.Name, r.RecordStart, r.Type.String(), r.Size, "none")
 }
 
-func (r *MasterRecord) Name() string {
-	return r.File.Name
-}
-
-func (r *MasterRecord) Update(w io.Writer) error {
+func (r *MasterRecord) Write(w io.Writer) error {
 	return Write(w, r.MasterHeader)
 }
 

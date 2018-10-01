@@ -6,35 +6,26 @@ import (
 )
 
 func init() {
-	if err := RegisterFileReader(&SegReader{T: TypeRaw, N: "CBFSRaw", F: NewRaw}); err != nil {
+	if err := RegisterFileReader(&SegReader{Type: TypeRaw, Name: "CBFSRaw", New: NewRaw}); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func NewRaw(r CountingReader, f *File) (ReadWriter, error) {
+func NewRaw(f *File) (ReadWriter, error) {
 	rec := &RawRecord{File: *f}
-	Debug("Before Raw: total bytes read: %d", r.Count())
-	Debug("Got header %v", *rec)
 	return rec, nil
 }
 
-func (h *RawRecord) Read([]byte) (int, error) {
-	return -1, nil
+func (r *RawRecord) Read(in io.ReadSeeker) error {
+	Debug("Got header %v", *r)
+	return nil
 }
 
-func (h *RawRecord) Write([]byte) (int, error) {
-	return -1, nil
+func (r *RawRecord) String() string {
+	return recString(r.File.Name, r.RecordStart, r.Type.String(), r.Size, "none")
 }
 
-func (h *RawRecord) String() string {
-	return recString(h.File.Name, h.RomOffset, h.Type.String(), h.Size, "none")
-}
-
-func (h *RawRecord) Name() string {
-	return h.File.Name
-}
-
-func (r *RawRecord) Update(w io.Writer) error {
+func (r *RawRecord) Write(w io.Writer) error {
 	if err := Write(w, r.FileHeader); err != nil {
 		return err
 	}

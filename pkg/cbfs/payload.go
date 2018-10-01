@@ -7,19 +7,22 @@ import (
 )
 
 func init() {
-	if err := RegisterFileReader(&SegReader{T: TypeSELF, N: "Payload", F: NewPayloadRecord}); err != nil {
+	if err := RegisterFileReader(&SegReader{Type: TypeSELF, Name: "Payload", New: NewPayloadRecord}); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func NewPayloadRecord(r CountingReader, f *File) (ReadWriter, error) {
+func NewPayloadRecord(f *File) (ReadWriter, error) {
 	p := &PayloadRecord{File: *f}
-	Debug("Before PayloadRecord: total bytes read: %d", r.Count())
+	return p, nil
+}
+
+func (p *PayloadRecord) Read(in io.ReadSeeker) error {
 	for {
 		var h PayloadHeader
-		if err := Read(r, &h); err != nil {
+		if err := Read(in, &h); err != nil {
 			Debug("PayloadHeader read: %v", err)
-			return nil, err
+			return err
 		}
 		Debug("Got PayloadHeader %s", h.String())
 		p.Segs = append(p.Segs, h)
@@ -28,24 +31,16 @@ func NewPayloadRecord(r CountingReader, f *File) (ReadWriter, error) {
 		}
 	}
 	p.Data = make([]byte, p.Size)
-	n, err := r.Read(p.Data)
+	n, err := in.Read(p.Data)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	Debug("Payload read %d bytes", n)
-	return p, nil
-}
-
-func (h *PayloadRecord) Read([]byte) (int, error) {
-	return -1, nil
-}
-
-func (h *PayloadRecord) Write([]byte) (int, error) {
-	return -1, nil
+	return nil
 }
 
 func (h *PayloadRecord) String() string {
-	s := recString(h.File.Name, h.RomOffset, h.Type.String(), h.Size, "none")
+	s := recString(h.File.Name, h.RecordStart, h.Type.String(), h.Size, "none")
 	for i, seg := range h.Segs {
 		s += recString(fmt.Sprintf("\n\tSeg #%d\t", i), seg.Offset, "Payload segment", seg.Size, seg.Compression.String())
 	}
@@ -62,11 +57,7 @@ func (r *PayloadHeader) String() string {
 		r.MemSize)
 }
 
-func (r *PayloadRecord) Name() string {
-	return r.File.Name
-}
-
-func (r *PayloadRecord) Update(w io.Writer) error {
+func (r *PayloadRecord) Write(w io.Writer) error {
 	if err := Write(w, r.FileHeader); err != nil {
 		return err
 	}

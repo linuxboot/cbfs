@@ -7,34 +7,29 @@ import (
 )
 
 func init() {
-	if err := RegisterFileReader(&SegReader{T: TypeStage, N: "Stage", F: NewStageRecord}); err != nil {
+	if err := RegisterFileReader(&SegReader{Type: TypeStage, Name: "Stage", New: NewStageRecord}); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func NewStageRecord(r CountingReader, f *File) (ReadWriter, error) {
-	h := &StageRecord{File: *f}
-	Debug("Before StageRecord: total bytes read: %d", r.Count())
-	if err := ReadLE(r, &h.StageHeader); err != nil {
+func NewStageRecord(f *File) (ReadWriter, error) {
+	r := &StageRecord{File: *f}
+	return r, nil
+}
+
+func (r *StageRecord) Read(in io.ReadSeeker) error {
+	if err := ReadLE(in, &r.StageHeader); err != nil {
 		Debug("StageHeader read: %v", err)
-		return nil, err
+		return err
 	}
-	Debug("Got StageHeader %s, data is %d bytes", h.String(), h.StageHeader.Size)
-	h.Data = make([]byte, h.StageHeader.Size)
-	n, err := r.Read(h.Data)
+	Debug("Got StageHeader %s, data is %d bytes", r.String(), r.StageHeader.Size)
+	r.Data = make([]byte, r.StageHeader.Size)
+	n, err := in.Read(r.Data)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	Debug("Stage read %d bytes", n)
-	return h, nil
-}
-
-func (h *StageRecord) Read([]byte) (int, error) {
-	return -1, nil
-}
-
-func (h *StageRecord) Write([]byte) (int, error) {
-	return -1, nil
+	return nil
 }
 
 func (h *StageHeader) String() string {
@@ -47,14 +42,10 @@ func (h *StageHeader) String() string {
 }
 
 func (h *StageRecord) String() string {
-	return recString(h.File.Name, h.RomOffset, h.Type.String(), h.Size, h.Compression.String())
+	return recString(h.File.Name, h.RecordStart, h.Type.String(), h.Size, h.Compression.String())
 }
 
-func (h *StageRecord) Name() string {
-	return h.File.Name
-}
-
-func (r *StageRecord) Update(w io.Writer) error {
+func (r *StageRecord) Write(w io.Writer) error {
 	if err := Write(w, r.FileHeader); err != nil {
 		return err
 	}

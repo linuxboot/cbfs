@@ -41,31 +41,6 @@ func WriteLE(r io.Writer, f interface{}) error {
 	return nil
 }
 
-func ReadName(r CountingReader, f *File, size uint32) (string, error) {
-	b := make([]byte, size)
-	n, err := r.Read(b)
-	if err != nil {
-		Debug("ReadName failed:%v", err)
-		return "", err
-	}
-	Debug("Readname gets %#02x", b)
-	if n != len(b) {
-		err = fmt.Errorf("ReadName: got %d, want %d for name", n, len(b))
-		Debug("Readname short: %v", err)
-		return "", err
-	}
-	// discard trailing NULLs
-	z := bytes.Split(b, []byte{0})
-	return string(z[0]), nil
-}
-
-func Align(r CountingReader) error {
-	var junk [16]byte
-	align := (int(r.Count()) + 15) & ^0xf
-	amt := align - int(r.Count())
-	return Read(r, junk[:amt])
-}
-
 func (c Compression) String() string {
 	switch c {
 	case None:
@@ -130,4 +105,22 @@ func (f FileType) String() string {
 
 func recString(n string, off uint32, typ string, sz uint32, compress string) string {
 	return fmt.Sprintf("%s\t\t%#x\t%s\t%d\t%s", n, off, typ, sz, compress)
+}
+
+func ReadName(r io.Reader, f *File, size uint32) (string, error) {
+	b := make([]byte, size)
+	n, err := r.Read(b)
+	if err != nil {
+		Debug("ReadName failed:%v", err)
+		return "", err
+	}
+	Debug("Readname gets %#02x", b)
+	if n != len(b) {
+		err = fmt.Errorf("ReadName: got %d, want %d for name", n, len(b))
+		Debug("Readname short: %v", err)
+		return "", err
+	}
+	// discard trailing NULLs
+	z := bytes.Split(b, []byte{0})
+	return string(z[0]), nil
 }

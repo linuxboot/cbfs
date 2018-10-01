@@ -55,7 +55,7 @@ func TestReadSimple(t *testing.T) {
 	}{
 		{"Master Only", Master, ""},
 	}
-
+	Debug = t.Logf
 	for _, tc := range tests {
 		t.Run(tc.n, func(t *testing.T) {
 			r := bytes.NewReader(tc.b)
@@ -69,7 +69,7 @@ func TestReadSimple(t *testing.T) {
 }
 
 func TestConflict(t *testing.T) {
-	if err := RegisterFileReader(&SegReader{T: 2, N: "CBFSRaw", F: nil}); err == nil {
+	if err := RegisterFileReader(&SegReader{Type: 2, Name: "CBFSRaw", New: nil}); err == nil {
 		t.Fatalf("Registering conflicting entry to type 2, want error, got nil")
 	}
 

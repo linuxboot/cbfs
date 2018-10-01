@@ -6,41 +6,32 @@ import (
 )
 
 func init() {
-	if err := RegisterFileReader(&SegReader{T: TypeBootBlock, N: "CBFSBootBlock", F: NewBootBlock}); err != nil {
+	if err := RegisterFileReader(&SegReader{Type: TypeBootBlock, Name: "CBFSBootBlock", New: NewBootBlock}); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func NewBootBlock(r CountingReader, f *File) (ReadWriter, error) {
-	h := &BootBlockRecord{File: *f}
-	Debug("Before BootBlock: total bytes read: %d", r.Count())
-	Debug("Got header %v", *h)
-	h.Data = make([]byte, h.Size)
-	n, err := r.Read(h.Data)
+func NewBootBlock(f *File) (ReadWriter, error) {
+	r := &BootBlockRecord{File: *f}
+	Debug("Got header %v", *r)
+	r.Data = make([]byte, r.Size)
+	return r, nil
+}
+
+func (r *BootBlockRecord) Read(in io.ReadSeeker) error {
+	n, err := in.Read(r.Data)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	Debug("Bootblock read %d bytes", n)
-	return h, nil
-}
-
-func (r *BootBlockRecord) Read([]byte) (int, error) {
-	return -1, nil
-}
-
-func (r *BootBlockRecord) Write([]byte) (int, error) {
-	return -1, nil
+	return nil
 }
 
 func (r *BootBlockRecord) String() string {
-	return recString(r.Name(), r.RomOffset, r.Type.String(), r.Size, "none")
+	return recString(r.File.Name, r.RecordStart, r.Type.String(), r.Size, "none")
 }
 
-func (r *BootBlockRecord) Name() string {
-	return "BootBlock"
-}
-
-func (r *BootBlockRecord) Update(w io.Writer) error {
+func (r *BootBlockRecord) Write(w io.Writer) error {
 	if err := Write(w, r.FileHeader); err != nil {
 		return err
 	}

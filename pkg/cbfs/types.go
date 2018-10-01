@@ -3,7 +3,6 @@ package cbfs
 import (
 	"encoding/binary"
 	"io"
-	"sync/atomic"
 
 	"github.com/linuxboot/fiano/pkg/fmap"
 )
@@ -80,11 +79,10 @@ const (
 
 const FileMagic = "LARCHIVE"
 
-type Magic [8]byte
-
-const FileSize = 16
+const FileSize = 24
 
 type FileHeader struct {
+	Magic           [8]byte
 	Size            uint32
 	Type            FileType
 	AttrOffset      uint32
@@ -93,8 +91,8 @@ type FileHeader struct {
 
 type File struct {
 	FileHeader
-	RomOffset uint32
-	Name      string
+	RecordStart uint32
+	Name        string
 }
 
 // The common fields of extended cbfs file attributes.
@@ -246,54 +244,18 @@ type OptionRom struct {
 
 // Each CBFS file type must implement at least this interface.
 type ReadWriter interface {
-	String() string
-	Name() string
-	Update(f io.Writer) error
 	Header() *File
-	// For the future FUSE server
-	Read([]byte) (int, error)
-	Write([]byte) (int, error)
-}
-
-type CountingReader interface {
-	Read([]byte) (int, error)
-	Count() uint32
-}
-
-type Reader struct {
-	io.Reader
-	c uint64
-}
-
-func NewCountingReader(r io.Reader) CountingReader {
-	return &Reader{Reader: r}
-}
-
-func (r *Reader) Read(b []byte) (int, error) {
-	n, err := r.Reader.Read(b)
-	if n > 0 {
-		atomic.AddUint64(&r.c, uint64(n))
-	}
-	return n, err
-}
-
-// Count function return counted bytes
-func (r *Reader) Count() uint32 {
-	return uint32(atomic.LoadUint64(&r.c))
+	String() string
+	Read(r io.ReadSeeker) error
+	Write(f io.Writer) error
 }
 
 type Image struct {
 	Segs []ReadWriter
-	// CBFS is self-contained.
-	// Hence the offset is always reported as the offset from the master record,
-	// not the start of flash.
-	// We record the offset of the image in flash here, though it's not clear we
-	// need to.
-	Offset int
 	// Scarf away the fmap info.
 	FMAP         *fmap.FMap
 	FMAPMetadata *fmap.Metadata
-	Index        int
+	Area         *fmap.Area
 	// And all the data.
 	Data []byte
 }
