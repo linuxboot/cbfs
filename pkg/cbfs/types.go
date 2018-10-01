@@ -248,6 +248,9 @@ type OptionRom struct {
 type ReadWriter interface {
 	String() string
 	Name() string
+	Update(f io.Writer) error
+	Header() *File
+	// For the future FUSE server
 	Read([]byte) (int, error)
 	Write([]byte) (int, error)
 }

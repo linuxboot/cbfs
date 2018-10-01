@@ -1,6 +1,7 @@
 package cbfs
 
 import (
+	"io"
 	"log"
 )
 
@@ -27,18 +28,29 @@ func NewEmpty(r CountingReader, f *File) (ReadWriter, error) {
 	return h, nil
 }
 
-func (h *EmptyRecord) Read([]byte) (int, error) {
+func (r *EmptyRecord) Read([]byte) (int, error) {
 	return -1, nil
 }
 
-func (h *EmptyRecord) Write([]byte) (int, error) {
+func (r *EmptyRecord) Write([]byte) (int, error) {
 	return -1, nil
 }
 
-func (h *EmptyRecord) String() string {
-	return recString("(empty)", h.RomOffset, h.Type.String(), h.Size, "none")
+func (r *EmptyRecord) String() string {
+	return recString("(empty)", r.RomOffset, r.Type.String(), r.Size, "none")
 }
 
-func (h *EmptyRecord) Name() string {
+func (r *EmptyRecord) Name() string {
 	return "(empty)"
+}
+
+func (r *EmptyRecord) Update(w io.Writer) error {
+	if err := Write(w, r.FileHeader); err != nil {
+		return err
+	}
+	return Write(w, r.Data)
+}
+
+func (r *EmptyRecord) Header() *File {
+	return &r.File
 }

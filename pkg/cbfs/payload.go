@@ -2,6 +2,7 @@ package cbfs
 
 import (
 	"fmt"
+	"io"
 	"log"
 )
 
@@ -51,16 +52,30 @@ func (h *PayloadRecord) String() string {
 	return s
 }
 
-func (h *PayloadHeader) String() string {
+func (r *PayloadHeader) String() string {
 	return fmt.Sprintf("Type %#x Compression %#x Offset %#x LoadAddress %#x Size %#x MemSize %#x",
-		h.Type,
-		h.Compression,
-		h.Offset,
-		h.LoadAddress,
-		h.Size,
-		h.MemSize)
+		r.Type,
+		r.Compression,
+		r.Offset,
+		r.LoadAddress,
+		r.Size,
+		r.MemSize)
 }
 
-func (h *PayloadRecord) Name() string {
-	return h.File.Name
+func (r *PayloadRecord) Name() string {
+	return r.File.Name
+}
+
+func (r *PayloadRecord) Update(w io.Writer) error {
+	if err := Write(w, r.FileHeader); err != nil {
+		return err
+	}
+	if err := WriteLE(w, r.Segs); err != nil {
+		return err
+	}
+	return Write(w, r.Data)
+}
+
+func (r *PayloadRecord) Header() *File {
+	return &r.File
 }

@@ -1,6 +1,7 @@
 package cbfs
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -117,39 +118,28 @@ func NewImage(in io.ReadSeeker) (*Image, error) {
 }
 
 func (i *Image) WriteFile(name string, perm os.FileMode) error {
-	f, err := os.OpenFile(name, os.O_WRONLY|os.O_CREATE, perm)
-	if err != nil {
+	if err := ioutil.WriteFile(name, i.Data, 0666); err != nil {
 		return err
 	}
-	// do the simple thing, fill the file with 0xff and then write the things
-	ff := make([]byte, i.FMAP.Size)
-	for i := range ff {
-		ff[i] = 0xff
-	}
-	if _, err := f.WriteAt(ff, 0); err != nil {
-		return err
-	}
-	if err := fmap.Write(f, i.FMAP, i.FMAPMetadata); err != nil {
-		return err
-	}
-	if false {
-		for _, a := range i.FMAP.Areas {
-			if _, err := f.WriteAt(i.Data[a.Offset:a.Size], int64(a.Offset)); err != nil {
-				return err
-			}
-		}
-	}
-	Debug("Wrote the fmap")
 	return nil
 }
 
 // Update creates a new []byte for the cbfs. It is complicated a lot
 // by the fact that endianness is not consistent in cbfs images.
 func (i *Image) Update() error {
-	a := i.FMAP.Areas[i.Index]
-	// Zero the flash where the new image will go.
-	for x := range i.Data[a.Offset : a.Offset+a.Size] {
-		i.Data[x] = 0xff
+	// Because there can be gaps due to alignment of various
+	// components, we start out by filling i.Data with ff
+	// past the FMAP header.
+	for x := range(i.Data[512:]) {
+		i.Data[x+512] = 0xff
+	}
+	for _, s := range i.Segs {
+		var b bytes.Buffer
+		if err := s.Update(&b); err != nil {
+			return err
+		}
+		Debug("Copy %d bytes to i.Data[%d]", len(b.Bytes()), s.Header().RomOffset+512)
+		copy(i.Data[s.Header().RomOffset+512:], b.Bytes())
 	}
 	return nil
 }
@@ -177,6 +167,21 @@ func (i *Image) Remove(n string) error {
 	if found == 0 || found == len(i.Segs)-1 {
 		return os.ErrPermission
 	}
+	del := &EmptyRecord{File: *i.Segs[found].Header(), Data: make([]byte, i.Segs[found].Header().Size)}
+	del.Type = TypeDeleted2
+	i.Segs[found] = del
+	/* not yet
+	// We might be able to merge it. This is not common however.
+	if i.Segs[found].Type != i.Segs[found+1].Type {
+		return nil
+	}
+	end := i.Segs[found].Offset + i.Segs[found].Size
+	if i.Segs[found+1].Offset != end {
+		return nil
+	}
+	i.Segs[found+1].Offset = i.Segs[found].Offset
+	i.Segs[found+1].Size += i.Segs[found].Size
 	i.Segs = append(i.Segs[:found], i.Segs[found:]...)
+	*/
 	return nil
 }

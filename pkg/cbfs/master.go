@@ -1,6 +1,7 @@
 package cbfs
 
 import (
+	"io"
 	"log"
 )
 
@@ -21,18 +22,26 @@ func NewMaster(r CountingReader, f *File) (ReadWriter, error) {
 	return h, nil
 }
 
-func (h *MasterRecord) Read([]byte) (int, error) {
+func (r *MasterRecord) Read([]byte) (int, error) {
 	return -1, nil
 }
 
-func (h *MasterRecord) Write([]byte) (int, error) {
+func (r *MasterRecord) Write([]byte) (int, error) {
 	return -1, nil
 }
 
-func (h *MasterRecord) String() string {
-	return recString(h.File.Name, h.RomOffset, h.Type.String(), h.Size, "none")
+func (r *MasterRecord) String() string {
+	return recString(r.File.Name, r.RomOffset, r.Type.String(), r.Size, "none")
 }
 
-func (h *MasterRecord) Name() string {
-	return h.File.Name
+func (r *MasterRecord) Name() string {
+	return r.File.Name
+}
+
+func (r *MasterRecord) Update(w io.Writer) error {
+	return Write(w, r.MasterHeader)
+}
+
+func (r *MasterRecord) Header() *File {
+	return &r.File
 }

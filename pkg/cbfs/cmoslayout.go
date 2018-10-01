@@ -1,6 +1,7 @@
 package cbfs
 
 import (
+	"io"
 	"log"
 )
 
@@ -11,24 +12,35 @@ func init() {
 }
 
 func NewCMOSLayout(r CountingReader, f *File) (ReadWriter, error) {
-	h := &CMOSLayoutRecord{File: *f}
+	rec := &CMOSLayoutRecord{File: *f}
 	Debug("Before CMOSLayout: total bytes read: %d", r.Count())
-	Debug("Got header %v", *h)
-	return h, nil
+	Debug("Got header %v", *rec)
+	return rec, nil
 }
 
-func (h *CMOSLayoutRecord) Read([]byte) (int, error) {
+func (r *CMOSLayoutRecord) Read([]byte) (int, error) {
 	return -1, nil
 }
 
-func (h *CMOSLayoutRecord) Write([]byte) (int, error) {
+func (r *CMOSLayoutRecord) Write([]byte) (int, error) {
 	return -1, nil
 }
 
-func (h *CMOSLayoutRecord) String() string {
-	return recString(h.File.Name, h.RomOffset, h.Type.String(), h.Size, "none")
+func (r *CMOSLayoutRecord) String() string {
+	return recString(r.File.Name, r.RomOffset, r.Type.String(), r.Size, "none")
 }
 
-func (h *CMOSLayoutRecord) Name() string {
-	return h.File.Name
+func (r *CMOSLayoutRecord) Name() string {
+	return r.File.Name
+}
+
+func (r *CMOSLayoutRecord) Update(w io.Writer) error {
+	if err := Write(w, r.FileHeader); err != nil {
+		return err
+	}
+	return Write(w, r.Data)
+}
+
+func (r *CMOSLayoutRecord) Header() *File {
+	return &r.File
 }

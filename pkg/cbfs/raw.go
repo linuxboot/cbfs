@@ -1,6 +1,7 @@
 package cbfs
 
 import (
+	"io"
 	"log"
 )
 
@@ -11,10 +12,10 @@ func init() {
 }
 
 func NewRaw(r CountingReader, f *File) (ReadWriter, error) {
-	h := &RawRecord{File: *f}
+	rec := &RawRecord{File: *f}
 	Debug("Before Raw: total bytes read: %d", r.Count())
-	Debug("Got header %v", *h)
-	return h, nil
+	Debug("Got header %v", *rec)
+	return rec, nil
 }
 
 func (h *RawRecord) Read([]byte) (int, error) {
@@ -31,4 +32,15 @@ func (h *RawRecord) String() string {
 
 func (h *RawRecord) Name() string {
 	return h.File.Name
+}
+
+func (r *RawRecord) Update(w io.Writer) error {
+	if err := Write(w, r.FileHeader); err != nil {
+		return err
+	}
+	return Write(w, r.Data)
+}
+
+func (r *RawRecord) Header() *File {
+	return &r.File
 }

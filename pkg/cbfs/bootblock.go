@@ -1,6 +1,7 @@
 package cbfs
 
 import (
+	"io"
 	"log"
 )
 
@@ -23,18 +24,29 @@ func NewBootBlock(r CountingReader, f *File) (ReadWriter, error) {
 	return h, nil
 }
 
-func (h *BootBlockRecord) Read([]byte) (int, error) {
+func (r *BootBlockRecord) Read([]byte) (int, error) {
 	return -1, nil
 }
 
-func (h *BootBlockRecord) Write([]byte) (int, error) {
+func (r *BootBlockRecord) Write([]byte) (int, error) {
 	return -1, nil
 }
 
-func (h *BootBlockRecord) String() string {
-	return recString(h.Name(), h.RomOffset, h.Type.String(), h.Size, "none")
+func (r *BootBlockRecord) String() string {
+	return recString(r.Name(), r.RomOffset, r.Type.String(), r.Size, "none")
 }
 
-func (h *BootBlockRecord) Name() string {
+func (r *BootBlockRecord) Name() string {
 	return "BootBlock"
+}
+
+func (r *BootBlockRecord) Update(w io.Writer) error {
+	if err := Write(w, r.FileHeader); err != nil {
+		return err
+	}
+	return Write(w, r.Data)
+}
+
+func (r *BootBlockRecord) Header() *File {
+	return &r.File
 }

@@ -2,6 +2,7 @@ package cbfs
 
 import (
 	"fmt"
+	"io"
 	"log"
 )
 
@@ -51,4 +52,19 @@ func (h *StageRecord) String() string {
 
 func (h *StageRecord) Name() string {
 	return h.File.Name
+}
+
+func (r *StageRecord) Update(w io.Writer) error {
+	if err := Write(w, r.FileHeader); err != nil {
+		return err
+	}
+	if err := WriteLE(w, r.StageHeader); err != nil {
+		return err
+	}
+
+	return Write(w, r.Data)
+}
+
+func (r *StageRecord) Header() *File {
+	return &r.File
 }
