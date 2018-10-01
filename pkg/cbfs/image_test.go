@@ -144,8 +144,11 @@ func TestRemovePayload(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(out.Name())
+	//	defer os.Remove(out.Name())
 	if err := i.Remove("fallback/payload"); err != nil {
+		t.Fatal(err)
+	}
+	if err := i.Update(); err != nil {
 		t.Fatal(err)
 	}
 	if err := i.WriteFile(out.Name(), 0666); err != nil {
@@ -158,16 +161,27 @@ func TestRemovePayload(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("output file %v", fi)
-	old, err := ioutil.ReadFile("testdata/coreboot.rom")
+	f, err = os.Open("testdata/removepayload.rom")
 	if err != nil {
 		t.Fatal(err)
 	}
-	new, err := ioutil.ReadFile(out.Name())
+	old, err := NewImage(f)
 	if err != nil {
 		t.Fatal(err)
 	}
+	f.Close()
+	f, err = os.Open(out.Name())
+	if err != nil {
+		t.Fatalf("%s: %v", out.Name(), err)
+	}
+	new, err := NewImage(f)
+	if err != nil {
+		t.Fatalf("%s: %v", out.Name(), err)
+	}
+	f.Close()
 	if !reflect.DeepEqual(old, new) {
-		t.Fatalf("testdata/coreboot.rom and %s differ", out.Name())
+		t.Errorf("testdata/coreboot.rom and %s differ", out.Name())
 	}
+	t.Logf("new image is %s", new.String())
 
 }

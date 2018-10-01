@@ -132,9 +132,11 @@ func (i *Image) WriteFile(name string, perm os.FileMode) error {
 	if err := fmap.Write(f, i.FMAP, i.FMAPMetadata); err != nil {
 		return err
 	}
-	for _, a := range i.FMAP.Areas {
-		if _, err := f.WriteAt(i.Data[a.Offset:a.Size], int64(a.Offset)); err != nil {
-			return err
+	if false {
+		for _, a := range i.FMAP.Areas {
+			if _, err := f.WriteAt(i.Data[a.Offset:a.Size], int64(a.Offset)); err != nil {
+				return err
+			}
 		}
 	}
 	Debug("Wrote the fmap")
@@ -144,7 +146,12 @@ func (i *Image) WriteFile(name string, perm os.FileMode) error {
 // Update creates a new []byte for the cbfs. It is complicated a lot
 // by the fact that endianness is not consistent in cbfs images.
 func (i *Image) Update() error {
-	return fmt.Errorf("not yet")
+	a := i.FMAP.Areas[i.Index]
+	// Zero the flash where the new image will go.
+	for x := range i.Data[a.Offset : a.Offset+a.Size] {
+		i.Data[x] = 0xff
+	}
+	return nil
 }
 
 func (i *Image) String() string {
