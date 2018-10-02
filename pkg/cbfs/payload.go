@@ -30,7 +30,15 @@ func (p *PayloadRecord) Read(in io.ReadSeeker) error {
 			break
 		}
 	}
-	p.FData = make([]byte, p.Size)
+	where, err := in.Seek(0, io.SeekCurrent)
+	if err != nil {
+		return fmt.Errorf("Finding location in stream: %v", err)
+	}
+	amt := uint32(where) - p.Size
+	if amt == 0 {
+		return nil
+	}
+	p.FData = make([]byte, amt)
 	n, err := in.Read(p.FData)
 	if err != nil {
 		return err

@@ -182,12 +182,12 @@ type StageHeader struct {
 	LoadAddress uint64
 	Size        uint32
 	MemSize     uint32
-	Data []byte
 }
 
 type StageRecord struct {
 	File
 	StageHeader
+	Data []byte
 }
 
 type RawRecord struct {
@@ -213,12 +213,12 @@ type PayloadHeader struct {
 	LoadAddress uint64
 	Size        uint32
 	MemSize     uint32
-	Data []byte
 }
 
 type PayloadRecord struct {
 	File
 	Segs []PayloadHeader
+	Data []byte
 }
 
 // fix this mess later to use characters, not constants.

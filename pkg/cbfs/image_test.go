@@ -11,6 +11,7 @@ import (
 )
 
 func TestReadFile(t *testing.T) {
+	Debug = t.Logf
 	f, err := os.Open("testdata/coreboot.rom")
 	if err != nil {
 		t.Fatal(err)

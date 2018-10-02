@@ -91,7 +91,7 @@ func NewImage(rs io.ReadSeeker) (*Image, error) {
 			return nil, err
 		}
 		if err := s.Read(bytes.NewReader(f.FData)); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Reading %#x byte subheader: %v", len(f.FData), err)
 		}
 		Debug("Segment was readable")
 		i.Segs = append(i.Segs, s)
