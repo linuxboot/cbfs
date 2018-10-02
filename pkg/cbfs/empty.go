@@ -7,17 +7,22 @@ import (
 )
 
 func init() {
-	if err := RegisterFileReader(&SegReader{Type: TypeDeleted, Name: "CBFSEmpty", New: NewEmpty}); err != nil {
+	if err := RegisterFileReader(&SegReader{Type: TypeDeleted, Name: "CBFSEmpty", New: NewEmptyRecord}); err != nil {
 		log.Fatal(err)
 	}
-	if err := RegisterFileReader(&SegReader{Type: TypeDeleted2, Name: "CBFSEmpty", New: NewEmpty}); err != nil {
+	if err := RegisterFileReader(&SegReader{Type: TypeDeleted2, Name: "CBFSEmpty", New: NewEmptyRecord}); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func NewEmpty(f *File) (ReadWriter, error) {
+func NewEmptyRecord(f *File) (ReadWriter, error) {
 	r := &EmptyRecord{File: *f}
 	Debug("Got header %v", *r)
+	// A common way to create a new empty record is to delete a file.
+	// We enforce some common rules here; empty records have no name
+	// and the type is Deleted.
+	r.Type = TypeDeleted2
+	r.Name = ""
 	r.Data = make([]byte, r.Size)
 	return r, nil
 }

@@ -1,6 +1,7 @@
 package cbfs
 
 import (
+	"fmt"
 	"io"
 	"log"
 )
@@ -18,6 +19,13 @@ func NewCMOSLayout(f *File) (ReadWriter, error) {
 }
 
 func (r *CMOSLayoutRecord) Read(in io.ReadSeeker) error {
+	_, err := in.Read(r.Data)
+	if err != nil {
+		return fmt.Errorf("CMOSLayout: empty read: %v", err)
+	}
+	Debug("CMOSLayout data read OK")
+	return nil
+
 	return nil
 }
 
@@ -26,9 +34,6 @@ func (r *CMOSLayoutRecord) String() string {
 }
 
 func (r *CMOSLayoutRecord) Write(w io.Writer) error {
-	if err := Write(w, r.FileHeader); err != nil {
-		return err
-	}
 	return Write(w, r.Data)
 }
 

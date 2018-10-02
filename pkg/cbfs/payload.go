@@ -58,9 +58,6 @@ func (r *PayloadHeader) String() string {
 }
 
 func (r *PayloadRecord) Write(w io.Writer) error {
-	if err := Write(w, r.FileHeader); err != nil {
-		return err
-	}
 	if err := WriteLE(w, r.Segs); err != nil {
 		return err
 	}

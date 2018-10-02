@@ -1,6 +1,7 @@
 package cbfs
 
 import (
+	"fmt"
 	"io"
 	"log"
 )
@@ -21,7 +22,7 @@ func NewBootBlock(f *File) (ReadWriter, error) {
 func (r *BootBlockRecord) Read(in io.ReadSeeker) error {
 	n, err := in.Read(r.Data)
 	if err != nil {
-		return err
+		return fmt.Errorf("Reading bootblockrecord at %#x, got %d bytes, wanted %d", r.SubHeaderOffset, n, len(r.Data))
 	}
 	Debug("Bootblock read %d bytes", n)
 	return nil
@@ -32,9 +33,6 @@ func (r *BootBlockRecord) String() string {
 }
 
 func (r *BootBlockRecord) Write(w io.Writer) error {
-	if err := Write(w, r.FileHeader); err != nil {
-		return err
-	}
 	return Write(w, r.Data)
 }
 

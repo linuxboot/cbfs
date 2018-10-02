@@ -1,6 +1,7 @@
 package cbfs
 
 import (
+	"fmt"
 	"io"
 	"log"
 )
@@ -17,7 +18,11 @@ func NewRaw(f *File) (ReadWriter, error) {
 }
 
 func (r *RawRecord) Read(in io.ReadSeeker) error {
-	Debug("Got header %v", *r)
+	_, err := in.Read(r.Data)
+	if err != nil {
+		return fmt.Errorf("raw read: %v", err)
+	}
+	Debug("raw data read OK")
 	return nil
 }
 
@@ -26,9 +31,6 @@ func (r *RawRecord) String() string {
 }
 
 func (r *RawRecord) Write(w io.Writer) error {
-	if err := Write(w, r.FileHeader); err != nil {
-		return err
-	}
 	return Write(w, r.Data)
 }
 

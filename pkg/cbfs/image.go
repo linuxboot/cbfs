@@ -126,6 +126,17 @@ func (i *Image) Update() error {
 		if err := Write(&b, s.Header().FileHeader); err != nil {
 			return err
 		}
+		// Tradition seems to have it that name bytes are zero-filled, not
+		// 0xff-filled. That's stupid.
+		n := make([]byte, s.Header().FileHeader.SubHeaderOffset-FileSize)
+		for i := range n {
+			n[i] = 0xff
+		}
+		n[len(s.Header().Name)] = 0
+		copy(n, []byte(s.Header().Name))
+		if _, err := b.Write(n); err != nil {
+			return fmt.Errorf("Writing name to cbfs record for %v: %v", s, err)
+		}
 		if err := s.Write(&b); err != nil {
 			return err
 		}
@@ -158,21 +169,7 @@ func (i *Image) Remove(n string) error {
 	if found == 0 || found == len(i.Segs)-1 {
 		return os.ErrPermission
 	}
-	del := &EmptyRecord{File: *i.Segs[found].Header(), Data: make([]byte, i.Segs[found].Header().Size)}
-	del.Type = TypeDeleted2
+	del, _ := NewEmptyRecord(i.Segs[found].Header())
 	i.Segs[found] = del
-	/* not yet
-	// We might be able to merge it. This is not common however.
-	if i.Segs[found].Type != i.Segs[found+1].Type {
-		return nil
-	}
-	end := i.Segs[found].Offset + i.Segs[found].Size
-	if i.Segs[found+1].Offset != end {
-		return nil
-	}
-	i.Segs[found+1].Offset = i.Segs[found].Offset
-	i.Segs[found+1].Size += i.Segs[found].Size
-	i.Segs = append(i.Segs[:found], i.Segs[found:]...)
-	*/
 	return nil
 }

@@ -46,9 +46,6 @@ func (h *StageRecord) String() string {
 }
 
 func (r *StageRecord) Write(w io.Writer) error {
-	if err := Write(w, r.FileHeader); err != nil {
-		return err
-	}
 	if err := WriteLE(w, r.StageHeader); err != nil {
 		return err
 	}
