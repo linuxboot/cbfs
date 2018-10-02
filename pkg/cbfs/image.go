@@ -82,12 +82,15 @@ func NewImage(rs io.ReadSeeker) (*Image, error) {
 		if err := ReadName(r, &f, f.SubHeaderOffset-(uint32(nameStart)-f.RecordStart)); err != nil {
 			return nil, err
 		}
+		if err := ReadData(r, &f); err != nil {
+			return nil, err
+		}
 		Debug("Found a SegReader for this %d size section: %v", f.Size, f.Name)
 		s, err := sr.New(&f)
 		if err != nil {
 			return nil, err
 		}
-		if err := s.Read(r); err != nil {
+		if err := s.Read(bytes.NewReader(f.FData)); err != nil {
 			return nil, err
 		}
 		Debug("Segment was readable")

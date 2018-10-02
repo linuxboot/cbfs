@@ -126,3 +126,20 @@ func ReadName(r io.Reader, f *File, size uint32) error {
 	f.Name = string(z[0])
 	return nil
 }
+
+func ReadData(r io.ReadSeeker, f *File) error {
+	Debug("ReadData: Seek to %#x",int64(f.RecordStart + f.SubHeaderOffset)) 
+	if _, err := r.Seek(int64(f.RecordStart + f.SubHeaderOffset), io.SeekStart); err != nil {
+		return err
+	}
+	Debug("ReadData: read %#x", f.Size)
+	b := make([]byte, f.Size)
+	n, err := r.Read(b)
+	if err != nil {
+		Debug("ReadData failed:%v", err)
+		return err
+	}
+	f.FData = b
+	Debug("ReadData gets %#02x", n)
+	return nil
+}

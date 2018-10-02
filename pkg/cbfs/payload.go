@@ -30,8 +30,8 @@ func (p *PayloadRecord) Read(in io.ReadSeeker) error {
 			break
 		}
 	}
-	p.Data = make([]byte, p.Size)
-	n, err := in.Read(p.Data)
+	p.FData = make([]byte, p.Size)
+	n, err := in.Read(p.FData)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (r *PayloadRecord) Write(w io.Writer) error {
 	if err := WriteLE(w, r.Segs); err != nil {
 		return err
 	}
-	return Write(w, r.Data)
+	return Write(w, r.FData)
 }
 
 func (r *PayloadRecord) Header() *File {

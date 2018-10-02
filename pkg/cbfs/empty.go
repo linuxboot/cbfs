@@ -1,7 +1,6 @@
 package cbfs
 
 import (
-	"fmt"
 	"io"
 	"log"
 )
@@ -28,16 +27,10 @@ func NewEmptyRecord(f *File) (ReadWriter, error) {
 	}
 	r.Type = TypeDeleted2
 	r.Name = ""
-	r.Data = make([]byte, r.Size)
 	return r, nil
 }
 
 func (r *EmptyRecord) Read(in io.ReadSeeker) error {
-	_, err := in.Read(r.Data)
-	if err != nil {
-		return fmt.Errorf("empty read: %v", err)
-	}
-	Debug("Empty data read OK")
 	return nil
 }
 
@@ -46,7 +39,7 @@ func (r *EmptyRecord) String() string {
 }
 
 func (r *EmptyRecord) Write(w io.Writer) error {
-	return Write(w, r.Data)
+	return Write(w, r.FData)
 }
 
 func (r *EmptyRecord) Header() *File {

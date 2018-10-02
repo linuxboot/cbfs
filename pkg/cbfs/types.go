@@ -94,7 +94,7 @@ type File struct {
 	RecordStart uint32
 	Name        string
 	Attr []byte
-	Data []byte
+	FData []byte
 }
 
 // The common fields of extended cbfs file attributes.
@@ -182,6 +182,7 @@ type StageHeader struct {
 	LoadAddress uint64
 	Size        uint32
 	MemSize     uint32
+	Data []byte
 }
 
 type StageRecord struct {
@@ -212,6 +213,7 @@ type PayloadHeader struct {
 	LoadAddress uint64
 	Size        uint32
 	MemSize     uint32
+	Data []byte
 }
 
 type PayloadRecord struct {
