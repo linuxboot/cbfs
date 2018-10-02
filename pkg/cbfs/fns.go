@@ -107,20 +107,22 @@ func recString(n string, off uint32, typ string, sz uint32, compress string) str
 	return fmt.Sprintf("%s\t\t%#x\t%s\t%d\t%s", n, off, typ, sz, compress)
 }
 
-func ReadName(r io.Reader, f *File, size uint32) (string, error) {
+func ReadName(r io.Reader, f *File, size uint32) error {
 	b := make([]byte, size)
 	n, err := r.Read(b)
 	if err != nil {
 		Debug("ReadName failed:%v", err)
-		return "", err
+		return err
 	}
 	Debug("Readname gets %#02x", b)
 	if n != len(b) {
 		err = fmt.Errorf("ReadName: got %d, want %d for name", n, len(b))
 		Debug("Readname short: %v", err)
-		return "", err
+		return err
 	}
+	f.Attr = b
 	// discard trailing NULLs
 	z := bytes.Split(b, []byte{0})
-	return string(z[0]), nil
+	f.Name = string(z[0])
+	return nil
 }

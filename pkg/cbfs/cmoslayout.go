@@ -14,6 +14,7 @@ func init() {
 
 func NewCMOSLayout(f *File) (ReadWriter, error) {
 	rec := &CMOSLayoutRecord{File: *f}
+	rec.Data = make([]byte, rec.Size)
 	Debug("Got header %v", *rec)
 	return rec, nil
 }
@@ -23,9 +24,7 @@ func (r *CMOSLayoutRecord) Read(in io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("CMOSLayout: empty read: %v", err)
 	}
-	Debug("CMOSLayout data read OK")
-	return nil
-
+	Debug("CMOSLayout data (%d bytes) read OK", len(r.Data))
 	return nil
 }
 

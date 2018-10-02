@@ -14,6 +14,7 @@ func init() {
 
 func NewRaw(f *File) (ReadWriter, error) {
 	rec := &RawRecord{File: *f}
+	rec.Data = make([]byte, rec.Size)
 	return rec, nil
 }
 
@@ -22,7 +23,7 @@ func (r *RawRecord) Read(in io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("raw read: %v", err)
 	}
-	Debug("raw data read OK")
+	Debug("raw data (%d bytes) read OK", len(r.Data))
 	return nil
 }
 

@@ -79,12 +79,10 @@ func NewImage(rs io.ReadSeeker) (*Image, error) {
 		if !ok {
 			return nil, fmt.Errorf("%v: unknown type %v", f, f.Type)
 		}
-		n, err := ReadName(r, &f, f.SubHeaderOffset-(uint32(nameStart)-f.RecordStart))
-		if err != nil {
+		if err := ReadName(r, &f, f.SubHeaderOffset-(uint32(nameStart)-f.RecordStart)); err != nil {
 			return nil, err
 		}
-		f.Name = n
-		Debug("Found a SegReader for this %d size section: %v", f.Size, n)
+		Debug("Found a SegReader for this %d size section: %v", f.Size, f.Name)
 		s, err := sr.New(&f)
 		if err != nil {
 			return nil, err
@@ -126,16 +124,8 @@ func (i *Image) Update() error {
 		if err := Write(&b, s.Header().FileHeader); err != nil {
 			return err
 		}
-		// Tradition seems to have it that name bytes are zero-filled, not
-		// 0xff-filled. That's stupid.
-		n := make([]byte, s.Header().FileHeader.SubHeaderOffset-FileSize)
-		for i := range n {
-			n[i] = 0xff
-		}
-		n[len(s.Header().Name)] = 0
-		copy(n, []byte(s.Header().Name))
-		if _, err := b.Write(n); err != nil {
-			return fmt.Errorf("Writing name to cbfs record for %v: %v", s, err)
+		if _, err := b.Write(s.Header().Attr); err != nil {
+			return fmt.Errorf("Writing attr to cbfs record for %v: %v", s, err)
 		}
 		if err := s.Write(&b); err != nil {
 			return err

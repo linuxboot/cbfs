@@ -93,6 +93,8 @@ type File struct {
 	FileHeader
 	RecordStart uint32
 	Name        string
+	Attr []byte
+	Data []byte
 }
 
 // The common fields of extended cbfs file attributes.
@@ -185,27 +187,22 @@ type StageHeader struct {
 type StageRecord struct {
 	File
 	StageHeader
-	Data []byte
 }
 
 type RawRecord struct {
 	File
-	Data []byte
 }
 
 type EmptyRecord struct {
 	File
-	Data []byte
 }
 
 type CMOSLayoutRecord struct {
 	File
-	Data []byte
 }
 
 type BootBlockRecord struct {
 	File
-	Data []byte
 }
 
 type PayloadHeader struct {
@@ -220,7 +217,6 @@ type PayloadHeader struct {
 type PayloadRecord struct {
 	File
 	Segs []PayloadHeader
-	Data []byte
 }
 
 // fix this mess later to use characters, not constants.
