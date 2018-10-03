@@ -18,6 +18,8 @@ func NewEmptyRecord(f *File) (ReadWriter, error) {
 	r := &EmptyRecord{File: *f}
 	Debug("Got header %v", r.String())
 	r.Type = TypeDeleted2
+	r.Attr = make([]byte, 16)
+	r.FData = ffbyte(f.Size)
 	return r, nil
 }
 

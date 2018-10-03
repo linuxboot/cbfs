@@ -167,8 +167,6 @@ func (i *Image) Remove(n string) error {
 	if found == 0 || found == len(i.Segs)-1 {
 		return os.ErrPermission
 	}
-	del, _ := NewEmptyRecord(i.Segs[found].Header())
-	//i.Segs[found] = del
 	start, end := found, found+1
 	if i.Segs[start-1].Header().Deleted() {
 		start = start - 1
@@ -182,9 +180,10 @@ func (i *Image) Remove(n string) error {
 	Debug("Remove: base %#x top %#x", base, top)
 	// 0x28: header size + 16-byte-aligned-size name
 	s := top - base - 0x28
+	i.Segs[found].Header().SubHeaderOffset = 0x28
+	i.Segs[found].Header().Size = s
+	del, _ := NewEmptyRecord(i.Segs[found].Header())
 	Debug("Offset is 0x28, Size is %#x", s)
-	del.Header().SubHeaderOffset = 0x28
-	del.Header().Size = s
 	Debug("Remove: Replace %d..%d with %s", start, end, del.String())
 	// At most, there will be an Empty record before us since
 	// things come pre-merged

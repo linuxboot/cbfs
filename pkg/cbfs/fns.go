@@ -143,3 +143,11 @@ func ReadData(r io.ReadSeeker, f *File) error {
 	Debug("ReadData gets %#02x", n)
 	return nil
 }
+
+func ffbyte(s uint32) []byte {
+	b := make([]byte, s)
+	for i := range b {
+		b[i] = 0xff
+	}
+	return b
+}
