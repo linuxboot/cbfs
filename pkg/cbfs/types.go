@@ -93,8 +93,8 @@ type File struct {
 	FileHeader
 	RecordStart uint32
 	Name        string
-	Attr []byte
-	FData []byte
+	Attr        []byte
+	FData       []byte
 }
 
 // The common fields of extended cbfs file attributes.

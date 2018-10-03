@@ -13,7 +13,7 @@ func init() {
 
 func NewBootBlock(f *File) (ReadWriter, error) {
 	r := &BootBlockRecord{File: *f}
-	Debug("Got header %v", *r)
+	Debug("Got header %s", r.String())
 	return r, nil
 }
 

@@ -147,6 +147,11 @@ func (i *Image) String() string {
 	return s
 }
 
+func (h *FileHeader) Deleted() bool {
+	t := h.Type
+	return t == TypeDeleted || t == TypeDeleted2
+}
+
 func (i *Image) Remove(n string) error {
 	found := -1
 	for x, s := range i.Segs {
@@ -163,6 +168,26 @@ func (i *Image) Remove(n string) error {
 		return os.ErrPermission
 	}
 	del, _ := NewEmptyRecord(i.Segs[found].Header())
-	i.Segs[found] = del
+	//i.Segs[found] = del
+	start, end := found, found+1
+	if i.Segs[start-1].Header().Deleted() {
+		start = start - 1
+	}
+	if i.Segs[end].Header().Deleted() {
+		end = end + 1
+	}
+	Debug("Remove: empty range [%d:%d]", start, end)
+	base := i.Segs[start].Header().RecordStart
+	top := i.Segs[end].Header().RecordStart
+	Debug("Remove: base %#x top %#x", base, top)
+	// 0x28: header size + 16-byte-aligned-size name
+	s := top - base - 0x28
+	Debug("Offset is 0x28, Size is %#x", s)
+	del.Header().SubHeaderOffset = 0x28
+	del.Header().Size = s
+	Debug("Remove: Replace %d..%d with %s", start, end, del.String())
+	// At most, there will be an Empty record before us since
+	// things come pre-merged
+	i.Segs = append(append(i.Segs[:start], del), i.Segs[end:]...)
 	return nil
 }
