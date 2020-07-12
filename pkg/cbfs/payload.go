@@ -51,7 +51,7 @@ func (h *PayloadRecord) String() string {
 	s := recString(h.File.Name, h.RecordStart, h.Type.String(), h.Size, "none")
 	for i, seg := range h.Segs {
 		s += "\n"
-		s += recString(fmt.Sprintf(" Seg #%d", i), seg.Offset, "Payload segment", seg.Size, seg.Compression.String())
+		s += recString(fmt.Sprintf(" Seg #%d", i), seg.Offset, seg.Type.String(), seg.Size, seg.Compression.String())
 	}
 	return s
 }

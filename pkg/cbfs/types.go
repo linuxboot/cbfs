@@ -219,7 +219,7 @@ type FSPRecord struct {
 }
 
 type PayloadHeader struct {
-	Type        uint32
+	Type        SegmentType
 	Compression Compression
 	Offset      uint32
 	LoadAddress uint64
@@ -245,6 +245,22 @@ const (
 	SegParams             = 0x50415241
 	SegEntry              = 0x454E5452
 )
+
+func (s SegmentType) String() string {
+	switch s {
+	case SegCode:
+		return "code"
+	case SegData:
+		return "data"
+	case SegBSS:
+		return "bss"
+	case SegParams:
+		return "params"
+	case SegEntry:
+		return "entry"
+	}
+	return "unknown"
+}
 
 type OptionRom struct {
 	File
