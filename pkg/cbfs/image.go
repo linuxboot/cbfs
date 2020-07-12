@@ -140,7 +140,9 @@ func (i *Image) Update() error {
 }
 
 func (i *Image) String() string {
-	var s = "FMAP REGIOName: COREBOOT\nName\t\t\t\tOffset\tType\t\tSize\tComp\n"
+	var s = "FMAP REGIOName: COREBOOT\n"
+
+	s += fmt.Sprintf("%-32s %-8s   %-24s %-8s   %-4s\n", "Name", "Offset", "Type", "Size", "Comp")
 	for _, seg := range i.Segs {
 		s = s + seg.String() + "\n"
 	}

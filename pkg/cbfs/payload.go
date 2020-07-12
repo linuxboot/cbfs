@@ -50,7 +50,8 @@ func (p *PayloadRecord) Read(in io.ReadSeeker) error {
 func (h *PayloadRecord) String() string {
 	s := recString(h.File.Name, h.RecordStart, h.Type.String(), h.Size, "none")
 	for i, seg := range h.Segs {
-		s += recString(fmt.Sprintf("\n\tSeg #%d\t", i), seg.Offset, "Payload segment", seg.Size, seg.Compression.String())
+		s += "\n"
+		s += recString(fmt.Sprintf(" Seg #%d", i), seg.Offset, "Payload segment", seg.Size, seg.Compression.String())
 	}
 	return s
 }

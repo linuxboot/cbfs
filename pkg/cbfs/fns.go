@@ -104,7 +104,7 @@ func (f FileType) String() string {
 }
 
 func recString(n string, off uint32, typ string, sz uint32, compress string) string {
-	return fmt.Sprintf("%s\t\t%#x\t%s\t%#x\t%s", n, off, typ, sz, compress)
+	return fmt.Sprintf("%-32s 0x%-8x %-24s 0x%-8x %-4s", n, off, typ, sz, compress)
 }
 
 func ReadName(r io.Reader, f *File, size uint32) error {
