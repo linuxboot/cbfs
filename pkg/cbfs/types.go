@@ -202,7 +202,19 @@ type CMOSLayoutRecord struct {
 	File
 }
 
+type MicrocodeRecord struct {
+	File
+}
+
 type BootBlockRecord struct {
+	File
+}
+
+type SPDRecord struct {
+	File
+}
+
+type FSPRecord struct {
 	File
 }
 
