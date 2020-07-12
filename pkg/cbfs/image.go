@@ -164,9 +164,13 @@ func (i *Image) Remove(n string) error {
 	if found == -1 {
 		return os.ErrExist
 	}
-	// You can not remove the master header or the boot block.
+	// You can not remove the master header
 	// Just remake the cbfs if you're doing that kind of surgery.
-	if found == 0 || found == len(i.Segs)-1 {
+	if found == 0 {
+		return os.ErrPermission
+	}
+	// You can not remove the bootblock on x86
+	if found == len(i.Segs)-1 && i.Segs[found].Header().Type == TypeBootBlock {
 		return os.ErrPermission
 	}
 	start, end := found, found+1
