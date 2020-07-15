@@ -107,17 +107,19 @@ func recString(n string, off uint32, typ string, sz uint32, compress string) str
 	return fmt.Sprintf("%-32s 0x%-8x %-24s 0x%-8x %-4s", n, off, typ, sz, compress)
 }
 
-func ReadName(r io.Reader, f *File, size uint32) error {
+// ReadNameAndAttributes reads the variable CBFS file attribute after the fixed CBFS header
+// That is the filename, CBFS Attribute, Hashes, ...
+func ReadNameAndAttributes(r io.Reader, f *File, size uint32) error {
 	b := make([]byte, size)
 	n, err := r.Read(b)
 	if err != nil {
-		Debug("ReadName failed:%v", err)
+		Debug("ReadNameAndAttributes failed:%v", err)
 		return err
 	}
-	Debug("Readname gets %#02x", b)
+	Debug("ReadNameAndAttributes gets %#02x", b)
 	if n != len(b) {
-		err = fmt.Errorf("ReadName: got %d, want %d for name", n, len(b))
-		Debug("Readname short: %v", err)
+		err = fmt.Errorf("ReadNameAndAttributes: got %d, want %d for name", n, len(b))
+		Debug("ReadNameAndAttributes short: %v", err)
 		return err
 	}
 	f.Attr = b

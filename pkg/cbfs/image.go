@@ -79,7 +79,7 @@ func NewImage(rs io.ReadSeeker) (*Image, error) {
 		if !ok {
 			return nil, fmt.Errorf("%v: unknown type %v", f, f.Type)
 		}
-		if err := ReadName(r, &f, f.SubHeaderOffset-(uint32(nameStart)-f.RecordStart)); err != nil {
+		if err := ReadNameAndAttributes(r, &f, f.SubHeaderOffset-(uint32(nameStart)-f.RecordStart)); err != nil {
 			return nil, err
 		}
 		if err := ReadData(r, &f); err != nil {
