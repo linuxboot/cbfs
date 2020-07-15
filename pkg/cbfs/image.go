@@ -116,12 +116,7 @@ func (i *Image) WriteFile(name string, perm os.FileMode) error {
 // Update creates a new []byte for the cbfs. It is complicated a lot
 // by the fact that endianness is not consistent in cbfs images.
 func (i *Image) Update() error {
-	// Because there can be gaps due to alignment of various
-	// components, we start out by filling i.Data with ff
-	// past the FMAP header.
-	for x := range i.Data[512:] {
-		i.Data[x+512] = 0xff
-	}
+	//FIXME: Support additional regions
 	for _, s := range i.Segs {
 		var b bytes.Buffer
 		if err := Write(&b, s.Header().FileHeader); err != nil {
@@ -133,8 +128,12 @@ func (i *Image) Update() error {
 		if err := s.Write(&b); err != nil {
 			return err
 		}
-		Debug("Copy %d bytes to i.Data[%d]", len(b.Bytes()), s.Header().RecordStart+512)
-		copy(i.Data[s.Header().RecordStart+512:], b.Bytes())
+		end := uint32(len(b.Bytes())) + s.Header().RecordStart
+		if end > i.Area.Size {
+			return fmt.Errorf("write outside of CBFS not supported %x %x", end, i.Area.Size)
+		}
+		Debug("Copy %s %d bytes to i.Data[%d]", s.Header().Type.String(), len(b.Bytes()), i.Area.Offset+s.Header().RecordStart)
+		copy(i.Data[i.Area.Offset+s.Header().RecordStart:], b.Bytes())
 	}
 	return nil
 }
