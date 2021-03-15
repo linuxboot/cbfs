@@ -11,7 +11,7 @@ func init() {
 	}
 }
 
-//NewSPD returns a ReadWriter interface for the CBFS type TypeSPD
+//NewSPD returns a ReadWriter for the CBFS type TypeSPD
 func NewSPD(f *File) (ReadWriter, error) {
 	rec := &SPDRecord{File: *f}
 	return rec, nil
@@ -30,6 +30,6 @@ func (r *SPDRecord) Write(w io.Writer) error {
 }
 
 //Header returns a pointer to the corresponding File
-func (r *SPDRecord) Header() *File {
+func (r *SPDRecord) File() *File {
 	return &r.File
 }

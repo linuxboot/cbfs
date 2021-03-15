@@ -270,7 +270,7 @@ type OptionRom struct {
 
 // Each CBFS file type must implement at least this interface.
 type ReadWriter interface {
-	Header() *File
+	File() *File
 	String() string
 	Read(r io.ReadSeeker) error
 	Write(f io.Writer) error

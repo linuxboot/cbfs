@@ -73,6 +73,6 @@ func (r *PayloadRecord) Write(w io.Writer) error {
 	return Write(w, r.FData)
 }
 
-func (r *PayloadRecord) Header() *File {
+func (r *PayloadRecord) File() *File {
 	return &r.File
 }

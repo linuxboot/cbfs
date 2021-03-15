@@ -24,7 +24,7 @@ func main() {
 
 	i, err := cbfs.Open(a[0])
 	if err != nil {
-		log.Fatal("Failed to open file %s. Error:", a[0], err)
+		log.Fatal(err)
 	}
 
 	switch a[1] {

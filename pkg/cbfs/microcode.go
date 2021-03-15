@@ -30,6 +30,6 @@ func (r *MicrocodeRecord) Write(w io.Writer) error {
 }
 
 //Header returns a pointer to the corresponding File
-func (r *MicrocodeRecord) Header() *File {
+func (r *MicrocodeRecord) File() *File {
 	return &r.File
 }

@@ -11,7 +11,7 @@ func init() {
 	}
 }
 
-//NewFSP returns a ReadWriter interface for the CBFS type TypeFSP
+// NewFSP returns a ReadWriter interface for the CBFS type TypeFSP
 func NewFSP(f *File) (ReadWriter, error) {
 	rec := &FSPRecord{File: *f}
 	return rec, nil
@@ -29,7 +29,7 @@ func (r *FSPRecord) Write(w io.Writer) error {
 	return Write(w, r.FData)
 }
 
-//Header returns a pointer to the corresponding File
-func (r *FSPRecord) Header() *File {
+// File returns a pointer to the corresponding File
+func (r *FSPRecord) File() *File {
 	return &r.File
 }
