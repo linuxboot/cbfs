@@ -202,12 +202,24 @@ type CMOSLayoutRecord struct {
 	File
 }
 
+type MicrocodeRecord struct {
+	File
+}
+
 type BootBlockRecord struct {
 	File
 }
 
+type SPDRecord struct {
+	File
+}
+
+type FSPRecord struct {
+	File
+}
+
 type PayloadHeader struct {
-	Type        uint32
+	Type        SegmentType
 	Compression Compression
 	Offset      uint32
 	LoadAddress uint64
@@ -234,6 +246,22 @@ const (
 	SegEntry              = 0x454E5452
 )
 
+func (s SegmentType) String() string {
+	switch s {
+	case SegCode:
+		return "code"
+	case SegData:
+		return "data"
+	case SegBSS:
+		return "bss"
+	case SegParams:
+		return "params"
+	case SegEntry:
+		return "entry"
+	}
+	return "unknown"
+}
+
 type OptionRom struct {
 	File
 	Compression Compression
@@ -242,7 +270,7 @@ type OptionRom struct {
 
 // Each CBFS file type must implement at least this interface.
 type ReadWriter interface {
-	Header() *File
+	File() *File
 	String() string
 	Read(r io.ReadSeeker) error
 	Write(f io.Writer) error

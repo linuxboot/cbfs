@@ -29,6 +29,6 @@ func (r *BootBlockRecord) Write(w io.Writer) error {
 	return Write(w, r.FData)
 }
 
-func (r *BootBlockRecord) Header() *File {
+func (r *BootBlockRecord) File() *File {
 	return &r.File
 }
