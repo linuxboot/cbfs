@@ -39,7 +39,7 @@ jobs:
           command: golint --set_exit_status ./pkg/cbfs
       - run: 
           name: golint cmd
-          command: goling --set_exit_status ./cmd/cbfs
+          command: golint --set_exit_status ./cmd/cbfs
       - run: go mod download
       - run: go mod verify
       - run: 
