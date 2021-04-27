@@ -76,8 +76,11 @@ func NewImage(rs io.ReadSeeker) (*Image, error) {
 			return nil, fmt.Errorf("Getting file offset for name: %v", err)
 		}
 		sr, ok := SegReaders[f.Type]
+		// If we cant find any new match, break out of the loop.
 		if !ok {
-			return nil, fmt.Errorf("%v: unknown type %v", f, f.Type)
+			// Remove last segment in image, because it's garbage
+			i.Segs = i.Segs[:len(i.Segs)-1]
+			break
 		}
 		if err := ReadNameAndAttributes(r, &f, f.SubHeaderOffset-(uint32(nameStart)-f.RecordStart)); err != nil {
 			return nil, err
