@@ -122,23 +122,23 @@ func (i *Image) Update() error {
 	//FIXME: Support additional regions
 	for _, s := range i.Segs {
 		var b bytes.Buffer
-		if err := Write(&b, s.File().FileHeader); err != nil {
+		if err := Write(&b, s.GetFile().FileHeader); err != nil {
 			return err
 		}
-		if _, err := b.Write(s.File().Attr); err != nil {
+		if _, err := b.Write(s.GetFile().Attr); err != nil {
 			return fmt.Errorf("Writing attr to cbfs record for %v: %v", s, err)
 		}
 		if err := s.Write(&b); err != nil {
 			return err
 		}
 		// This error should not happen but we need to check just in case.
-		end := uint32(len(b.Bytes())) + s.File().RecordStart
+		end := uint32(len(b.Bytes())) + s.GetFile().RecordStart
 		if end > i.Area.Size {
-			return fmt.Errorf("Region [%#x, %#x] outside of CBFS [%#x, %#x]", s.File().RecordStart, end, s.File().RecordStart, i.Area.Size)
+			return fmt.Errorf("Region [%#x, %#x] outside of CBFS [%#x, %#x]", s.GetFile().RecordStart, end, s.GetFile().RecordStart, i.Area.Size)
 		}
 
-		Debug("Copy %s %d bytes to i.Data[%d]", s.File().Type.String(), len(b.Bytes()), i.Area.Offset+s.File().RecordStart)
-		copy(i.Data[i.Area.Offset+s.File().RecordStart:], b.Bytes())
+		Debug("Copy %s %d bytes to i.Data[%d]", s.GetFile().Type.String(), len(b.Bytes()), i.Area.Offset+s.GetFile().RecordStart)
+		copy(i.Data[i.Area.Offset+s.GetFile().RecordStart:], b.Bytes())
 	}
 	return nil
 }
@@ -161,7 +161,7 @@ func (h *FileHeader) Deleted() bool {
 func (i *Image) Remove(n string) error {
 	found := -1
 	for x, s := range i.Segs {
-		if s.File().Name == n {
+		if s.GetFile().Name == n {
 			found = x
 		}
 	}
@@ -174,25 +174,25 @@ func (i *Image) Remove(n string) error {
 		return os.ErrPermission
 	}
 	// Bootblock on x86 is at the end of CBFS and shall stay untouched.
-	if found == len(i.Segs)-1 && i.Segs[found].File().Type == TypeBootBlock {
+	if found == len(i.Segs)-1 && i.Segs[found].GetFile().Type == TypeBootBlock {
 		return os.ErrPermission
 	}
 	start, end := found, found+1
-	if i.Segs[start-1].File().Deleted() {
+	if i.Segs[start-1].GetFile().Deleted() {
 		start = start - 1
 	}
-	if i.Segs[end].File().Deleted() {
+	if i.Segs[end].GetFile().Deleted() {
 		end = end + 1
 	}
 	Debug("Remove: empty range [%d:%d]", start, end)
-	base := i.Segs[start].File().RecordStart
-	top := i.Segs[end].File().RecordStart
+	base := i.Segs[start].GetFile().RecordStart
+	top := i.Segs[end].GetFile().RecordStart
 	Debug("Remove: base %#x top %#x", base, top)
 	// 0x28: header size + 16-byte-aligned-size name
 	s := top - base - 0x28
-	i.Segs[found].File().SubHeaderOffset = 0x28
-	i.Segs[found].File().Size = s
-	del, _ := NewEmptyRecord(i.Segs[found].File())
+	i.Segs[found].GetFile().SubHeaderOffset = 0x28
+	i.Segs[found].GetFile().Size = s
+	del, _ := NewEmptyRecord(i.Segs[found].GetFile())
 	Debug("Offset is 0x28, Size is %#x", s)
 	Debug("Remove: Replace %d..%d with %s", start, end, del.String())
 	// At most, there will be an Empty record before us since

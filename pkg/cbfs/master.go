@@ -33,6 +33,6 @@ func (r *MasterRecord) Write(w io.Writer) error {
 	return Write(w, r.MasterHeader)
 }
 
-func (r *MasterRecord) File() *File {
+func (r *MasterRecord) GetFile() *File {
 	return &r.File
 }

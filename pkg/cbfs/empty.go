@@ -35,6 +35,6 @@ func (r *EmptyRecord) Write(w io.Writer) error {
 	return Write(w, r.FData)
 }
 
-func (r *EmptyRecord) File() *File {
+func (r *EmptyRecord) GetFile() *File {
 	return &r.File
 }

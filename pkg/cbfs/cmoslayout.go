@@ -28,6 +28,6 @@ func (r *CMOSLayoutRecord) Write(w io.Writer) error {
 	return Write(w, r.FData)
 }
 
-func (r *CMOSLayoutRecord) File() *File {
+func (r *CMOSLayoutRecord) GetFile() *File {
 	return &r.File
 }

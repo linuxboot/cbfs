@@ -53,6 +53,6 @@ func (r *StageRecord) Write(w io.Writer) error {
 	return Write(w, r.Data)
 }
 
-func (r *StageRecord) File() *File {
+func (r *StageRecord) GetFile() *File {
 	return &r.File
 }
