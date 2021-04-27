@@ -30,6 +30,6 @@ func (r *SPDRecord) Write(w io.Writer) error {
 }
 
 //Header returns a pointer to the corresponding File
-func (r *SPDRecord) File() *File {
+func (r *SPDRecord) GetFile() *File {
 	return &r.File
 }

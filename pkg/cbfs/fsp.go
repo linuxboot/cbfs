@@ -30,6 +30,6 @@ func (r *FSPRecord) Write(w io.Writer) error {
 }
 
 // File returns a pointer to the corresponding File
-func (r *FSPRecord) File() *File {
+func (r *FSPRecord) GetFile() *File {
 	return &r.File
 }

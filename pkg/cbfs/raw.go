@@ -28,6 +28,6 @@ func (r *RawRecord) Write(w io.Writer) error {
 	return Write(w, r.FData)
 }
 
-func (r *RawRecord) File() *File {
+func (r *RawRecord) GetFile() *File {
 	return &r.File
 }
