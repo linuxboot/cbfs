@@ -111,23 +111,43 @@ func recString(n string, off uint32, typ string, sz uint32, compress string) str
 
 // ReadNameAndAttributes reads the variable CBFS file attribute after the fixed CBFS header
 // That is the filename, CBFS Attribute, Hashes, ...
-func ReadNameAndAttributes(r io.Reader, f *File, size uint32) error {
+func ReadName(r io.Reader, f *File, size uint32) error {
 	b := make([]byte, size)
 	n, err := r.Read(b)
 	if err != nil {
-		Debug("ReadNameAndAttributes failed:%v", err)
+		Debug("ReadName failed:%v", err)
 		return err
 	}
-	Debug("ReadNameAndAttributes gets %#02x", b)
+	Debug("ReadName gets %#02x", b)
 	if n != len(b) {
-		err = fmt.Errorf("ReadNameAndAttributes: got %d, want %d for name", n, len(b))
-		Debug("ReadNameAndAttributes short: %v", err)
+		err = fmt.Errorf("ReadName: got %d, want %d for name", n, len(b))
+		Debug("ReadName short: %v", err)
 		return err
 	}
-	f.Attr = b
 	// discard trailing NULLs
 	z := bytes.Split(b, []byte{0})
 	f.Name = string(z[0])
+	return nil
+}
+
+func ReadAttributes(r io.Reader, f *File) error {
+	if f.AttrOffset == 0 {
+		return nil
+	}
+
+	b := make([]byte, f.SubHeaderOffset-f.AttrOffset)
+	n, err := r.Read(b)
+	if err != nil {
+		Debug("ReadAttributes failed:%v", err)
+		return err
+	}
+	Debug("ReadAttributes gets %#02x", b)
+	if n != len(b) {
+		err = fmt.Errorf("ReadAttributes: got %d, want %d for name", n, len(b))
+		Debug("ReadAttributes short: %v", err)
+		return err
+	}
+	f.Attr = b
 	return nil
 }
 

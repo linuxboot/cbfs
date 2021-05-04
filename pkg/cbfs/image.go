@@ -82,7 +82,16 @@ func NewImage(rs io.ReadSeeker) (*Image, error) {
 			i.Segs = i.Segs[:len(i.Segs)-1]
 			break
 		}
-		if err := ReadNameAndAttributes(r, &f, f.SubHeaderOffset-(uint32(nameStart)-f.RecordStart)); err != nil {
+		var nameSize uint32
+		if f.AttrOffset == 0 {
+			nameSize = f.SubHeaderOffset - (uint32(nameStart) - f.RecordStart)
+		} else {
+			nameSize = f.AttrOffset - (uint32(nameStart) - f.RecordStart)
+		}
+		if err := ReadName(r, &f, nameSize); err != nil {
+			return nil, err
+		}
+		if err := ReadAttributes(r, &f); err != nil {
 			return nil, err
 		}
 		if err := ReadData(r, &f); err != nil {
