@@ -7,17 +7,20 @@ import (
 )
 
 func init() {
+	if err := RegisterFileReader(&SegReader{Type: TypeLegacyStage, Name: "LegacyStage", New: NewLegacyStageRecord}); err != nil {
+		log.Fatal(err)
+	}
 	if err := RegisterFileReader(&SegReader{Type: TypeStage, Name: "Stage", New: NewStageRecord}); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func NewStageRecord(f *File) (ReadWriter, error) {
-	r := &StageRecord{File: *f}
+func NewLegacyStageRecord(f *File) (ReadWriter, error) {
+	r := &LegacyStageRecord{File: *f}
 	return r, nil
 }
 
-func (r *StageRecord) Read(in io.ReadSeeker) error {
+func (r *LegacyStageRecord) Read(in io.ReadSeeker) error {
 	if err := ReadLE(in, &r.StageHeader); err != nil {
 		Debug("StageHeader read: %v", err)
 		return err
@@ -41,15 +44,45 @@ func (h *StageHeader) String() string {
 		h.MemSize)
 }
 
-func (h *StageRecord) String() string {
+func (h *LegacyStageRecord) String() string {
 	return recString(h.File.Name, h.RecordStart, h.Type.String(), h.Size, h.Compression.String())
 }
 
-func (r *StageRecord) Write(w io.Writer) error {
+func (r *LegacyStageRecord) Write(w io.Writer) error {
 	if err := WriteLE(w, r.StageHeader); err != nil {
 		return err
 	}
 
+	return Write(w, r.Data)
+}
+
+func (r *LegacyStageRecord) GetFile() *File {
+	return &r.File
+}
+
+func NewStageRecord(f *File) (ReadWriter, error) {
+	r := &StageRecord{File: *f}
+	return r, nil
+}
+
+func (r *StageRecord) Read(in io.ReadSeeker) error {
+	return nil
+}
+
+func (h *FileAttrStageHeader) String() string {
+	return fmt.Sprintf("Size %#x LoadAddress %#x EntryOffset %#x MemSize %#x",
+		h.Size,
+		h.LoadAddress,
+		h.EntryOffset,
+		h.MemSize)
+}
+
+func (h *StageRecord) String() string {
+	// TODO read compression from Attributes
+	return recString(h.File.Name, h.RecordStart, h.Type.String(), h.File.Size, "none")
+}
+
+func (r *StageRecord) Write(w io.Writer) error {
 	return Write(w, r.Data)
 }
 

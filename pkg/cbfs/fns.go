@@ -63,6 +63,8 @@ func (f FileType) String() string {
 		return "cbfs header"
 	case TypeBootBlock:
 		return "TypeBootBlock"
+	case TypeLegacyStage:
+		return "TypeLegacyStage"
 	case TypeStage:
 		return "TypeStage"
 	case TypeSELF:

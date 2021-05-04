@@ -30,28 +30,29 @@ type FileType uint32
 
 const (
 	// FOV
-	TypeDeleted2   FileType = 0xffffffff
-	TypeDeleted             = 0
-	TypeBootBlock           = 0x1
-	TypeMaster              = 0x2
-	TypeStage               = 0x10
-	TypeSELF                = 0x20
-	TypeFIT                 = 0x21
-	TypeOptionRom           = 0x30
-	TypeBootSplash          = 0x40
-	TypeRaw                 = 0x50
-	TypeVSA                 = 0x51 // very, very obsolete Geode thing
-	TypeMBI                 = 0x52
-	TypeMicroCode           = 0x53
-	TypeFSP                 = 0x60
-	TypeMRC                 = 0x61
-	TypeMMA                 = 0x62
-	TypeEFI                 = 0x63
-	TypeStruct              = 0x70
-	TypeCMOS                = 0xaa
-	TypeSPD                 = 0xab
-	TypeMRCCache            = 0xac
-	TypeCMOSLayout          = 0x1aa
+	TypeDeleted2    FileType = 0xffffffff
+	TypeDeleted              = 0
+	TypeBootBlock            = 0x1
+	TypeMaster               = 0x2
+	TypeLegacyStage          = 0x10
+	TypeStage                = 0x11
+	TypeSELF                 = 0x20
+	TypeFIT                  = 0x21
+	TypeOptionRom            = 0x30
+	TypeBootSplash           = 0x40
+	TypeRaw                  = 0x50
+	TypeVSA                  = 0x51 // very, very obsolete Geode thing
+	TypeMBI                  = 0x52
+	TypeMicroCode            = 0x53
+	TypeFSP                  = 0x60
+	TypeMRC                  = 0x61
+	TypeMMA                  = 0x62
+	TypeEFI                  = 0x63
+	TypeStruct               = 0x70
+	TypeCMOS                 = 0xaa
+	TypeSPD                  = 0xab
+	TypeMRCCache             = 0xac
+	TypeCMOSLayout           = 0x1aa
 )
 
 const (
@@ -115,6 +116,7 @@ const (
 	Hash           = 0x68736148
 	PSCB           = 0x42435350
 	ALCB           = 0x42434c41
+	SHCB           = 0x53746748
 )
 
 type FileAttrCompression struct {
@@ -141,6 +143,14 @@ type FileAttrAlign struct {
 	Tag   Tag
 	Size  uint32 // includes everything including data.
 	Align uint32
+}
+
+type FileAttrStageHeader struct {
+	Tag         Tag
+	Size        uint32
+	LoadAddress uint64
+	EntryOffset uint32
+	MemSize     uint32
 }
 
 // Component sub-headers
@@ -184,9 +194,15 @@ type StageHeader struct {
 	MemSize     uint32
 }
 
-type StageRecord struct {
+type LegacyStageRecord struct {
 	File
 	StageHeader
+	Data []byte
+}
+
+type StageRecord struct {
+	File
+	FileAttrStageHeader
 	Data []byte
 }
 
