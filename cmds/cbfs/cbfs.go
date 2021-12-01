@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -30,6 +31,12 @@ func main() {
 	switch a[1] {
 	case "list":
 		fmt.Printf("%s", i.String())
+	case "json":
+		j, err := json.MarshalIndent(i, "  ", "  ")
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%s", string(j))
 	default:
 		log.Fatal("?")
 	}

@@ -2,6 +2,7 @@ package cbfs
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"io"
 
 	"github.com/linuxboot/fiano/pkg/fmap"
@@ -96,6 +97,22 @@ type File struct {
 	Name        string
 	Attr        []byte
 	FData       []byte
+}
+
+type mFile struct {
+	Name  string
+	Start uint32
+	Size  uint32
+	Type  string
+}
+
+func (f *File) MarshalJSON() ([]byte, error) {
+	return json.Marshal(mFile{
+		Name:  f.Name,
+		Start: f.RecordStart,
+		Size:  f.FileHeader.Size,
+		Type:  f.FileHeader.Type.String(),
+	})
 }
 
 // The common fields of extended cbfs file attributes.

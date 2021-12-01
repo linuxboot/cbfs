@@ -2,6 +2,7 @@ package cbfs
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -150,6 +151,14 @@ func (i *Image) Update() error {
 		copy(i.Data[i.Area.Offset+s.GetFile().RecordStart:], b.Bytes())
 	}
 	return nil
+}
+
+type mImage struct {
+	Segments []ReadWriter
+}
+
+func (i *Image) MarshalJSON() ([]byte, error) {
+	return json.Marshal(mImage{Segments: i.Segs})
 }
 
 func (i *Image) String() string {
