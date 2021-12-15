@@ -1,6 +1,7 @@
 package cbfs
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -33,6 +34,30 @@ func (r *LegacyStageRecord) Read(in io.ReadSeeker) error {
 	}
 	Debug("Stage read %d bytes", n)
 	return nil
+}
+
+type mStage struct {
+	Name        string
+	Start       uint32
+	Size        uint32
+	Type        string
+	Compression string
+}
+
+func (h *LegacyStageRecord) MarshalJSON() ([]byte, error) {
+	c := h.Compression.String()
+	s := mStage{
+		Name:  h.File.Name,
+		Start: h.RecordStart,
+		Size:  h.Size,
+		Type:  h.Type.String(),
+	}
+	// For marshalling, just omit instead of using an ambiguous string
+	// FIXME: Currently, this leaves us with an empty string `""`.
+	if c != "none" {
+		s.Compression = c
+	}
+	return json.Marshal(s)
 }
 
 func (h *StageHeader) String() string {
